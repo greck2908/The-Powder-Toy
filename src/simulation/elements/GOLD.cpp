@@ -1,10 +1,7 @@
-#include "simulation/ElementCommon.h"
+#include "simulation/Elements.h"
 #include "simulation/Air.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_GOLD()
+//#TPT-Directive ElementClass Element_GOLD PT_GOLD 170
+Element_GOLD::Element_GOLD()
 {
 	Identifier = "DEFAULT_PT_GOLD";
 	Name = "GOLD";
@@ -31,6 +28,7 @@ void Element::Element_GOLD()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f +273.15f;
 	HeatConduct = 251;
 	Description = "Corrosion resistant metal, will reverse corrosion of iron.";
 
@@ -45,11 +43,12 @@ void Element::Element_GOLD()
 	HighTemperature = 1337.0f;
 	HighTemperatureTransition = PT_LAVA;
 
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_GOLD::update;
+	Graphics = &Element_GOLD::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_GOLD static int update(UPDATE_FUNC_ARGS)
+int Element_GOLD::update(UPDATE_FUNC_ARGS)
 {
 	int rx, ry, r, rndstore;
 	static int checkCoordsX[] = { -4, 4, 0, 0 };
@@ -98,7 +97,8 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_GOLD static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_GOLD::graphics(GRAPHICS_FUNC_ARGS)
 {
 	int rndstore = RNG::Ref().gen();
 	*colr += (rndstore % 10) - 5;
@@ -108,3 +108,5 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	*colb += (rndstore % 10) - 5;
 	return 0;
 }
+
+Element_GOLD::~Element_GOLD() {}

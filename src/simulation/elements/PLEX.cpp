@@ -1,6 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-void Element::Element_PLEX()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_PLEX PT_PLEX 11
+Element_PLEX::Element_PLEX()
 {
 	Identifier = "DEFAULT_PT_PLEX";
 	Name = "C-4";
@@ -27,6 +27,7 @@ void Element::Element_PLEX()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 88;
 	Description = "Solid pressure sensitive explosive.";
 
@@ -40,4 +41,8 @@ void Element::Element_PLEX()
 	LowTemperatureTransition = NT;
 	HighTemperature = 673.0f;
 	HighTemperatureTransition = PT_FIRE;
+
+	Update = NULL;
 }
+
+Element_PLEX::~Element_PLEX() {}

@@ -1,25 +1,36 @@
+#include "common/String.h"
 #include "SearchController.h"
-
 #include "SearchModel.h"
 #include "SearchView.h"
-
+#include "gui/interface/Panel.h"
 #include "gui/dialogues/ConfirmPrompt.h"
+#include "gui/dialogues/ErrorMessage.h"
 #include "gui/preview/PreviewController.h"
-#include "gui/preview/PreviewView.h"
-
+#include "client/Client.h"
+#include "Platform.h"
 #include "tasks/Task.h"
 #include "tasks/TaskWindow.h"
 
-#include "Platform.h"
-#include "Controller.h"
+class SearchController::OpenCallback: public ControllerCallback
+{
+	SearchController * cc;
+public:
+	OpenCallback(SearchController * cc_) { cc = cc_; }
+	virtual void ControllerExit()
+	{
+		if(cc->activePreview->GetDoOpen() && cc->activePreview->GetSaveInfo())
+		{
+			cc->searchModel->SetLoadedSave(cc->activePreview->GetSaveInfo());
+		}
+		else
+		{
+			cc->searchModel->SetLoadedSave(NULL);
+		}
 
-#include "graphics/Graphics.h"
+	}
+};
 
-#include "client/Client.h"
-
-#include "common/tpt-minmax.h"
-
-SearchController::SearchController(std::function<void ()> onDone_):
+SearchController::SearchController(ControllerCallback * callback):
 	activePreview(NULL),
 	nextQueryTime(0.0f),
 	nextQueryDone(true),
@@ -34,7 +45,7 @@ SearchController::SearchController(std::function<void ()> onDone_):
 
 	searchModel->UpdateSaveList(1, "");
 
-	onDone = onDone_;
+	this->callback = callback;
 }
 
 SaveInfo * SearchController::GetLoadedSave()
@@ -78,8 +89,8 @@ void SearchController::Exit()
 {
 	InstantOpen(false);
 	searchView->CloseActiveWindow();
-	if (onDone)
-		onDone();
+	if(callback)
+		callback->ControllerExit();
 	//HasExited = true;
 }
 
@@ -89,6 +100,7 @@ SearchController::~SearchController()
 	searchView->CloseActiveWindow();
 	delete searchModel;
 	delete searchView;
+	delete callback;
 }
 
 void SearchController::DoSearch(String query, bool now)
@@ -177,32 +189,9 @@ void SearchController::Selected(int saveID, bool selected)
 		searchModel->DeselectSave(saveID);
 }
 
-void SearchController::SelectAllSaves() 
-{
-	if (!Client::Ref().GetAuthUser().UserID)
-		return;
-	if (searchModel->GetShowOwn() || 
-		Client::Ref().GetAuthUser().UserElevation == User::ElevationModerator || 
-		Client::Ref().GetAuthUser().UserElevation == User::ElevationAdmin)
-		searchModel->SelectAllSaves();
-
-}
-
 void SearchController::InstantOpen(bool instant)
 {
 	instantOpen = instant;
-}
-
-void SearchController::OpenSaveDone()
-{
-	if (activePreview->GetDoOpen() && activePreview->GetSaveInfo())
-	{
-		searchModel->SetLoadedSave(activePreview->GetSaveInfo());
-	}
-	else
-	{
-		searchModel->SetLoadedSave(NULL);
-	}
 }
 
 void SearchController::OpenSave(int saveID)
@@ -210,7 +199,7 @@ void SearchController::OpenSave(int saveID)
 	delete activePreview;
 	Graphics * g = searchView->GetGraphics();
 	g->fillrect(XRES/3, WINDOWH-20, XRES/3, 20, 0, 0, 0, 150); //dim the "Page X of Y" a little to make the CopyTextButton more noticeable
-	activePreview = new PreviewController(saveID, 0, instantOpen, [this] { OpenSaveDone(); });
+	activePreview = new PreviewController(saveID, instantOpen, new OpenCallback(this));
 	activePreview->GetView()->MakeActiveWindow();
 }
 
@@ -219,7 +208,7 @@ void SearchController::OpenSave(int saveID, int saveDate)
 	delete activePreview;
 	Graphics * g = searchView->GetGraphics();
 	g->fillrect(XRES/3, WINDOWH-20, XRES/3, 20, 0, 0, 0, 150); //dim the "Page X of Y" a little to make the CopyTextButton more noticeable
-	activePreview = new PreviewController(saveID, saveDate, instantOpen, [this] { OpenSaveDone(); });
+	activePreview = new PreviewController(saveID, saveDate, instantOpen, new OpenCallback(this));
 	activePreview->GetView()->MakeActiveWindow();
 }
 
@@ -230,14 +219,23 @@ void SearchController::ClearSelection()
 
 void SearchController::RemoveSelected()
 {
+	class RemoveSelectedConfirmation: public ConfirmDialogueCallback {
+	public:
+		SearchController * c;
+		RemoveSelectedConfirmation(SearchController * c_) {	c = c_;	}
+		virtual void ConfirmCallback(ConfirmPrompt::DialogueResult result) {
+			if (result == ConfirmPrompt::ResultOkay)
+				c->removeSelectedC();
+		}
+		virtual ~RemoveSelectedConfirmation() { }
+	};
+
 	StringBuilder desc;
 	desc << "Are you sure you want to delete " << searchModel->GetSelected().size() << " save";
 	if(searchModel->GetSelected().size()>1)
 		desc << "s";
 	desc << "?";
-	new ConfirmPrompt("Delete saves", desc.Build(), { [this] {
-		removeSelectedC();
-	} });
+	new ConfirmPrompt("Delete saves", desc.Build(), new RemoveSelectedConfirmation(this));
 }
 
 void SearchController::removeSelectedC()
@@ -248,7 +246,7 @@ void SearchController::removeSelectedC()
 		std::vector<int> saves;
 	public:
 		RemoveSavesTask(std::vector<int> saves_, SearchController *c_) { saves = saves_; c = c_; }
-		bool doWork() override
+		virtual bool doWork()
 		{
 			for (size_t i = 0; i < saves.size(); i++)
 			{
@@ -274,14 +272,24 @@ void SearchController::removeSelectedC()
 
 void SearchController::UnpublishSelected(bool publish)
 {
+	class UnpublishSelectedConfirmation: public ConfirmDialogueCallback {
+	public:
+		SearchController * c;
+		bool publish;
+		UnpublishSelectedConfirmation(SearchController * c_, bool publish_) { c = c_; publish = publish_; }
+		virtual void ConfirmCallback(ConfirmPrompt::DialogueResult result) {
+			if (result == ConfirmPrompt::ResultOkay)
+				c->unpublishSelectedC(publish);
+		}
+		virtual ~UnpublishSelectedConfirmation() { }
+	};
+
 	StringBuilder desc;
 	desc << "Are you sure you want to " << (publish ? String("publish ") : String("unpublish ")) << searchModel->GetSelected().size() << " save";
 	if (searchModel->GetSelected().size() > 1)
 		desc << "s";
 	desc << "?";
-	new ConfirmPrompt(publish ? String("Publish Saves") : String("Unpublish Saves"), desc.Build(), { [this, publish] {
-		unpublishSelectedC(publish);
-	} });
+	new ConfirmPrompt(publish ? String("Publish Saves") : String("Unpublish Saves"), desc.Build(), new UnpublishSelectedConfirmation(this, publish));
 }
 
 void SearchController::unpublishSelectedC(bool publish)
@@ -310,7 +318,7 @@ void SearchController::unpublishSelectedC(bool publish)
 			return true;
 		}
 
-		bool doWork() override
+		virtual bool doWork()
 		{
 			bool ret;
 			for (size_t i = 0; i < saves.size(); i++)
@@ -346,7 +354,7 @@ void SearchController::FavouriteSelected()
 		std::vector<int> saves;
 	public:
 		FavouriteSavesTask(std::vector<int> saves_) { saves = saves_; }
-		bool doWork() override
+		virtual bool doWork()
 		{
 			for (size_t i = 0; i < saves.size(); i++)
 			{
@@ -367,7 +375,7 @@ void SearchController::FavouriteSelected()
 		std::vector<int> saves;
 	public:
 		UnfavouriteSavesTask(std::vector<int> saves_) { saves = saves_; }
-		bool doWork() override
+		virtual bool doWork()
 		{
 			for (size_t i = 0; i < saves.size(); i++)
 			{

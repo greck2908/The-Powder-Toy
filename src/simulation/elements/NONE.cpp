@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static VideoBuffer *iconGen(int wallID, int width, int height);
-
-void Element::Element_NONE()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_NONE PT_NONE 0
+Element_NONE::Element_NONE()
 {
 	Identifier = "DEFAULT_PT_NONE";
 	Name = "";
@@ -28,6 +26,7 @@ void Element::Element_NONE()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+273.15f;
 	HeatConduct = 0;
 	Description = "Erases particles.";
 
@@ -42,10 +41,12 @@ void Element::Element_NONE()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	IconGenerator = &iconGen;
+	Update = NULL;
+	IconGenerator = &Element_NONE::iconGen;
 }
 
-static VideoBuffer *iconGen(int wallID, int width, int height)
+//#TPT-Directive ElementHeader Element_NONE static VideoBuffer * iconGen(int, int, int)
+VideoBuffer * Element_NONE::iconGen(int wallID, int width, int height)
 {
 	VideoBuffer * newTexture = new VideoBuffer(width, height);
 
@@ -59,3 +60,6 @@ static VideoBuffer *iconGen(int wallID, int width, int height)
 
 	return newTexture;
 }
+
+
+Element_NONE::~Element_NONE() {}

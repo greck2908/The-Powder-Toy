@@ -1,9 +1,5 @@
 #include "LoginModel.h"
 
-#include "LoginView.h"
-
-#include "client/Client.h"
-
 LoginModel::LoginModel():
 	currentUser(0, "")
 {

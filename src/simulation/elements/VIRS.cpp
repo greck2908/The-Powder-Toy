@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-int Element_VIRS_update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_VIRS()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_VIRS PT_VIRS 174
+Element_VIRS::Element_VIRS()
 {
 	Identifier = "DEFAULT_PT_VIRS";
 	Name = "VIRS";
@@ -29,7 +26,7 @@ void Element::Element_VIRS()
 
 	Weight = 31;
 
-	DefaultProperties.temp = 72.0f + 273.15f;
+	Temperature = 72.0f	+ 273.15f;
 	HeatConduct = 251;
 	Description = "Virus. Turns everything it touches into virus.";
 
@@ -44,13 +41,12 @@ void Element::Element_VIRS()
 	HighTemperature = 673.0f;
 	HighTemperatureTransition = PT_VRSG;
 
-	DefaultProperties.pavg[1] = 250;
-
-	Update = &Element_VIRS_update;
-	Graphics = &graphics;
+	Update = &Element_VIRS::update;
+	Graphics = &Element_VIRS::graphics;
 }
 
-int Element_VIRS_update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_VIRS static int update(UPDATE_FUNC_ARGS)
+int Element_VIRS::update(UPDATE_FUNC_ARGS)
 {
 	//pavg[0] measures how many frames until it is cured (0 if still actively spreading and not being cured)
 	//pavg[1] measures how many frames until it dies
@@ -144,9 +140,12 @@ int Element_VIRS_update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_VIRS static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_VIRS::graphics(GRAPHICS_FUNC_ARGS)
 {
 	*pixel_mode |= PMODE_BLUR;
 	*pixel_mode |= NO_DECO;
 	return 1;
 }
+
+Element_VIRS::~Element_VIRS() {}

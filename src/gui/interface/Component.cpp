@@ -1,6 +1,7 @@
-#include "gui/interface/Component.h"
-
+#include <iostream>
 #include "graphics/Graphics.h"
+#include "gui/interface/Component.h"
+#include "gui/interface/Engine.h"
 #include "gui/interface/Point.h"
 #include "gui/interface/Window.h"
 #include "gui/interface/Panel.h"

@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-
-void Element::Element_SLTW()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_SLTW PT_SLTW 27
+Element_SLTW::Element_SLTW()
 {
 	Identifier = "DEFAULT_PT_SLTW";
 	Name = "SLTW";
@@ -28,6 +26,7 @@ void Element::Element_SLTW()
 
 	Weight = 35;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 75;
 	Description = "Saltwater, conducts electricity, difficult to freeze.";
 
@@ -42,10 +41,11 @@ void Element::Element_SLTW()
 	HighTemperature = 383.0f;
 	HighTemperatureTransition = ST;
 
-	Update = &update;
+	Update = &Element_SLTW::update;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_SLTW static int update(UPDATE_FUNC_ARGS)
+int Element_SLTW::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry;
 	for (rx=-1; rx<2; rx++)
@@ -91,3 +91,6 @@ static int update(UPDATE_FUNC_ARGS)
 			}
 	return 0;
 }
+
+
+Element_SLTW::~Element_SLTW() {}

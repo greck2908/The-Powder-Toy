@@ -1,20 +1,11 @@
-#include "PreviewModel.h"
-
 #include <cmath>
-#include <iostream>
-
+#include "PreviewModel.h"
 #include "Format.h"
-
 #include "client/Client.h"
 #include "client/GameSave.h"
-#include "client/SaveInfo.h"
-#include "client/http/Request.h"
-
+#include "common/tpt-minmax.h"
 #include "gui/dialogues/ErrorMessage.h"
-#include "gui/preview/Comment.h"
-
 #include "PreviewModelException.h"
-#include "PreviewView.h"
 
 PreviewModel::PreviewModel():
 	doOpen(false),
@@ -81,16 +72,16 @@ void PreviewModel::UpdateSave(int saveID, int saveDate)
 
 	ByteString url;
 	if (saveDate)
-		url = ByteString::Build(STATICSCHEME, STATICSERVER, "/", saveID, "_", saveDate, ".cps");
+		url = ByteString::Build("http://", STATICSERVER, "/", saveID, "_", saveDate, ".cps");
 	else
-		url = ByteString::Build(STATICSCHEME, STATICSERVER, "/", saveID, ".cps");
-	saveDataDownload = new http::Request(url);
+		url = ByteString::Build("http://", STATICSERVER, "/", saveID, ".cps");
+	saveDataDownload = new Download(url);
 	saveDataDownload->Start();
 
-	url = ByteString::Build(SCHEME, SERVER , "/Browse/View.json?ID=", saveID);
+	url = ByteString::Build("http://", SERVER , "/Browse/View.json?ID=", saveID);
 	if (saveDate)
 		url += ByteString::Build("&Date=", saveDate);
-	saveInfoDownload = new http::Request(url);
+	saveInfoDownload = new Download(url);
 	saveInfoDownload->AuthHeaders(ByteString::Build(Client::Ref().GetAuthUser().UserID), Client::Ref().GetAuthUser().SessionID);
 	saveInfoDownload->Start();
 
@@ -98,8 +89,8 @@ void PreviewModel::UpdateSave(int saveID, int saveDate)
 	{
 		commentsLoaded = false;
 
-		url = ByteString::Build(SCHEME, SERVER, "/Browse/Comments.json?ID=", saveID, "&Start=", (commentsPageNumber-1)*20, "&Count=20");
-		commentsDownload = new http::Request(url);
+		url = ByteString::Build("http://", SERVER, "/Browse/Comments.json?ID=", saveID, "&Start=", (commentsPageNumber-1)*20, "&Count=20");
+		commentsDownload = new Download(url);
 		commentsDownload->AuthHeaders(ByteString::Build(Client::Ref().GetAuthUser().UserID), Client::Ref().GetAuthUser().SessionID);
 		commentsDownload->Start();
 	}
@@ -150,8 +141,8 @@ void PreviewModel::UpdateComments(int pageNumber)
 		commentsPageNumber = pageNumber;
 		if (!GetDoOpen())
 		{
-			ByteString url = ByteString::Build(SCHEME, SERVER, "/Browse/Comments.json?ID=", saveID, "&Start=", (commentsPageNumber-1)*20, "&Count=20");
-			commentsDownload = new http::Request(url);
+			ByteString url = ByteString::Build("http://", SERVER, "/Browse/Comments.json?ID=", saveID, "&Start=", (commentsPageNumber-1)*20, "&Count=20");
+			commentsDownload = new Download(url);
 			commentsDownload->AuthHeaders(ByteString::Build(Client::Ref().GetAuthUser().UserID), Client::Ref().GetAuthUser().SessionID);
 			commentsDownload->Start();
 		}
@@ -175,7 +166,7 @@ void PreviewModel::OnSaveReady()
 	{
 		GameSave *gameSave = new GameSave(*saveData);
 		if (gameSave->fromNewerVersion)
-			new ErrorMessage("This save is from a newer version", "Please update TPT in game or at https://powdertoy.co.uk");
+			new ErrorMessage("This save is from a newer version", "Please update TPT in game or at http://powdertoy.co.uk");
 		saveInfo->SetGameSave(gameSave);
 	}
 	catch(ParseException &e)
@@ -202,7 +193,7 @@ void PreviewModel::ClearComments()
 	}
 }
 
-bool PreviewModel::ParseSaveInfo(ByteString &saveInfoResponse)
+bool PreviewModel::ParseSaveInfo(char * saveInfoResponse)
 {
 	delete saveInfo;
 
@@ -248,7 +239,7 @@ bool PreviewModel::ParseSaveInfo(ByteString &saveInfoResponse)
 				saveDataDownload->Cancel();
 			delete saveData;
 			saveData = NULL;
-			saveDataDownload = new http::Request(ByteString::Build(STATICSCHEME, STATICSERVER, "/2157797.cps"));
+			saveDataDownload = new Download(ByteString::Build("http://", STATICSERVER, "/2157797.cps"));
 			saveDataDownload->Start();
 		}
 		return true;
@@ -260,7 +251,7 @@ bool PreviewModel::ParseSaveInfo(ByteString &saveInfoResponse)
 	}
 }
 
-bool PreviewModel::ParseComments(ByteString &commentsResponse)
+bool PreviewModel::ParseComments(char *commentsResponse)
 {
 	ClearComments();
 	saveComments = new std::vector<SaveComment*>();
@@ -292,15 +283,14 @@ void PreviewModel::Update()
 {
 	if (saveDataDownload && saveDataDownload->CheckDone())
 	{
-		int status;
-		ByteString ret = saveDataDownload->Finish(&status);
+		int status, length;
+		char *ret = saveDataDownload->Finish(&length, &status);
 
-		ByteString nothing;
-		Client::Ref().ParseServerReturn(nothing, status, true);
-		if (status == 200 && ret.size())
+		Client::Ref().ParseServerReturn(NULL, status, true);
+		if (status == 200 && ret)
 		{
 			delete saveData;
-			saveData = new std::vector<unsigned char>(ret.begin(), ret.end());
+			saveData = new std::vector<unsigned char>(ret, ret+length);
 			if (saveInfo && saveData)
 				OnSaveReady();
 		}
@@ -312,16 +302,16 @@ void PreviewModel::Update()
 			}
 		}
 		saveDataDownload = NULL;
+		free(ret);
 	}
 
 	if (saveInfoDownload && saveInfoDownload->CheckDone())
 	{
 		int status;
-		ByteString ret = saveInfoDownload->Finish(&status);
+		char *ret = saveInfoDownload->Finish(NULL, &status);
 
-		ByteString nothing;
-		Client::Ref().ParseServerReturn(nothing, status, true);
-		if (status == 200 && ret.size())
+		Client::Ref().ParseServerReturn(NULL, status, true);
+		if (status == 200 && ret)
 		{
 			if (ParseSaveInfo(ret))
 			{
@@ -340,17 +330,17 @@ void PreviewModel::Update()
 				observers[i]->SaveLoadingError(Client::Ref().GetLastError());
 		}
 		saveInfoDownload = NULL;
+		free(ret);
 	}
 
 	if (commentsDownload && commentsDownload->CheckDone())
 	{
 		int status;
-		ByteString ret = commentsDownload->Finish(&status);
+		char *ret = commentsDownload->Finish(NULL, &status);
 		ClearComments();
 
-		ByteString nothing;
-		Client::Ref().ParseServerReturn(nothing, status, true);
-		if (status == 200 && ret.size())
+		Client::Ref().ParseServerReturn(NULL, status, true);
+		if (status == 200 && ret)
 			ParseComments(ret);
 
 		commentsLoaded = true;
@@ -358,6 +348,7 @@ void PreviewModel::Update()
 		notifyCommentsPageChanged();
 
 		commentsDownload = NULL;
+		free(ret);
 	}
 }
 

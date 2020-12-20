@@ -1,6 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-void Element::Element_NITR()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_NITR PT_NITR 8
+Element_NITR::Element_NITR()
 {
 	Identifier = "DEFAULT_PT_NITR";
 	Name = "NITR";
@@ -27,6 +27,7 @@ void Element::Element_NITR()
 
 	Weight = 23;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 50;
 	Description = "Nitroglycerin. Pressure sensitive explosive. Mix with CLST to make TNT.";
 
@@ -40,4 +41,8 @@ void Element::Element_NITR()
 	LowTemperatureTransition = NT;
 	HighTemperature = 673.0f;
 	HighTemperatureTransition = PT_FIRE;
+
+	Update = NULL;
 }
+
+Element_NITR::~Element_NITR() {}

@@ -1,9 +1,8 @@
-#include "simulation/ElementCommon.h"
+#include "simulation/Elements.h"
 #include <iostream>
 
-static int update(UPDATE_FUNC_ARGS);
-
-void Element::Element_LDTC()
+//#TPT-Directive ElementClass Element_LDTC PT_LDTC 186
+Element_LDTC::Element_LDTC()
 {
 	Identifier = "DEFAULT_PT_LDTC";
 	Name = "LDTC";
@@ -29,10 +28,11 @@ void Element::Element_LDTC()
 
 	Weight = 100;
 
+	Temperature = R_TEMP + 273.15f;
 	HeatConduct = 0;
 	Description = "Linear detector. Scans in 8 directions for particles with its ctype and creates a spark on the opposite side.";
 
-	Properties = TYPE_SOLID | PROP_NOCTYPEDRAW;
+	Properties = TYPE_SOLID | PROP_DRAWONCTYPE | PROP_NOCTYPEDRAW;
 
 	LowPressure = IPL;
 	LowPressureTransition = NT;
@@ -43,14 +43,17 @@ void Element::Element_LDTC()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
-	CtypeDraw = &Element::ctypeDrawVInTmp;
+	Update = &Element_LDTC::update;
 }
 
-constexpr int FLAG_INVERT_FILTER =  0x1;
-constexpr int FLAG_IGNORE_ENERGY =  0x2;
-constexpr int FLAG_NO_COPY_COLOR =  0x4;
-constexpr int FLAG_KEEP_SEARCHING = 0x8;
+//#TPT-Directive ElementHeader Element_LDTC static const int FLAG_INVERT_FILTER
+//#TPT-Directive ElementHeader Element_LDTC static const int FLAG_IGNORE_ENERGY
+//#TPT-Directive ElementHeader Element_LDTC static const int FLAG_NO_COPY_COLOR
+//#TPT-Directive ElementHeader Element_LDTC static const int FLAG_KEEP_SEARCHING
+const int Element_LDTC::FLAG_INVERT_FILTER =  0x1;
+const int Element_LDTC::FLAG_IGNORE_ENERGY =  0x2;
+const int Element_LDTC::FLAG_NO_COPY_COLOR =  0x4;
+const int Element_LDTC::FLAG_KEEP_SEARCHING = 0x8;
 
 //NOTES:
 // ctype is used to store the target element, if any. (NONE is treated as a wildcard)
@@ -63,15 +66,17 @@ constexpr int FLAG_KEEP_SEARCHING = 0x8;
 // 0x08: Keep searching even after finding a particle
 
 
+//#TPT-Directive ElementHeader Element_LDTC static bool phot_data_type(int rt);
 /* Returns true for particles that activate the special FILT color copying mode */
-static bool phot_data_type(int rt)
+bool Element_LDTC::phot_data_type(int rt)
 {
 	return rt == PT_FILT || rt == PT_PHOT || rt == PT_BRAY;
 }
 
+//#TPT-Directive ElementHeader Element_LDTC static bool accepted_conductor(Simulation *sim, int rt);
 /* Returns true for particles that start a ray search ("dtec" mode)
  */
-static bool accepted_conductor(Simulation* sim, int r)
+bool Element_LDTC::accepted_conductor(Simulation* sim, int r)
 {
 	int rt = TYP(r);
 	return (sim->elements[rt].Properties & PROP_CONDUCTS) &&
@@ -80,13 +85,14 @@ static bool accepted_conductor(Simulation* sim, int r)
 		sim->parts[ID(r)].life == 0;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_LDTC static int update(UPDATE_FUNC_ARGS)
+int Element_LDTC::update(UPDATE_FUNC_ARGS)
 {
 	int ctype = TYP(parts[i].ctype), ctypeExtra = ID(parts[i].ctype), detectLength = parts[i].tmp, detectSpaces = parts[i].tmp2;
-	bool copyColor = !(parts[i].tmp2 & FLAG_NO_COPY_COLOR);
-	bool ignoreEnergy = parts[i].tmp2 & FLAG_IGNORE_ENERGY;
-	bool invertFilter = parts[i].tmp2 & FLAG_INVERT_FILTER;
-	bool keepSearching = parts[i].tmp2 & FLAG_KEEP_SEARCHING;
+	bool copyColor = !(parts[i].tmp2 & Element_LDTC::FLAG_NO_COPY_COLOR);
+	bool ignoreEnergy = parts[i].tmp2 & Element_LDTC::FLAG_IGNORE_ENERGY;
+	bool invertFilter = parts[i].tmp2 & Element_LDTC::FLAG_INVERT_FILTER;
+	bool keepSearching = parts[i].tmp2 & Element_LDTC::FLAG_KEEP_SEARCHING;
 	if (detectSpaces < 0)
 		detectSpaces = parts[i].tmp2 = 0;
 	if (detectLength < 0)
@@ -100,7 +106,7 @@ static int update(UPDATE_FUNC_ARGS)
 				int r = pmap[y+ry][x+rx];
 				if (!r)
 					continue;
-				bool boolMode = accepted_conductor(sim, r);
+				bool boolMode = Element_LDTC::accepted_conductor(sim, r);
 				bool filtMode = copyColor && TYP(r) == PT_FILT;
 				if (!boolMode && !filtMode)
 					continue;
@@ -144,13 +150,12 @@ static int update(UPDATE_FUNC_ARGS)
 
 					if (filtMode)
 					{
-						if (!phot_data_type(TYP(rr)))
+						if (!Element_LDTC::phot_data_type(TYP(rr)))
 							continue;
 
 						int nx = x + rx, ny = y + ry;
-						int Element_FILT_getWavelengths(Particle* cpart);
 						int photonWl = TYP(rr) == PT_FILT ?
-							Element_FILT_getWavelengths(&parts[ID(rr)]) :
+							Element_FILT::getWavelengths(&parts[ID(rr)]) :
 							parts[ID(rr)].ctype;
 						while (TYP(r) == PT_FILT)
 						{
@@ -169,3 +174,5 @@ static int update(UPDATE_FUNC_ARGS)
 	}
 	return 0;
 }
+
+Element_LDTC::~Element_LDTC() {}

@@ -1,15 +1,16 @@
 #ifndef LOGINMODEL_H_
 #define LOGINMODEL_H_
-#include "Config.h"
 
 #include <vector>
 #include "common/String.h"
-#include "client/User.h"
+#include "LoginView.h"
+#include "client/Client.h"
+
+using namespace std;
 
 class LoginView;
-class LoginModel
-{
-	std::vector<LoginView*> observers;
+class LoginModel {
+	vector<LoginView*> observers;
 	String statusText;
 	bool loginStatus;
 	void notifyStatusChanged();

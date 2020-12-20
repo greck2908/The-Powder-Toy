@@ -1,11 +1,10 @@
 #include "SaveRenderer.h"
-
 #include "client/GameSave.h"
-
 #include "graphics/Graphics.h"
-#include "graphics/Renderer.h"
-
 #include "Simulation.h"
+#include "graphics/Renderer.h"
+#include "gui/search/Thumbnail.h"
+
 
 SaveRenderer::SaveRenderer(){
 	g = new Graphics();
@@ -33,28 +32,19 @@ SaveRenderer::SaveRenderer(){
 #endif
 }
 
-VideoBuffer * SaveRenderer::Render(GameSave * save, bool decorations, bool fire, Renderer *renderModeSource)
+VideoBuffer * SaveRenderer::Render(GameSave * save, bool decorations, bool fire)
 {
-	std::lock_guard<std::mutex> gx(renderMutex);
-
-	ren->ResetModes();
-	if (renderModeSource)
-	{
-		ren->SetRenderMode(renderModeSource->GetRenderMode());
-		ren->SetDisplayMode(renderModeSource->GetDisplayMode());
-		ren->SetColourMode(renderModeSource->GetColourMode());
-	}
-
 	int width, height;
 	VideoBuffer * tempThumb = NULL;
 	width = save->blockWidth;
 	height = save->blockHeight;
 	bool doCollapse = save->Collapsed();
 
+	g->Acquire();
 	g->Clear();
 	sim->clear_sim();
 
-	if(!sim->Load(save, true))
+	if(!sim->Load(save))
 	{
 		ren->decorations_enable = true;
 		ren->blackDecorations = !decorations;
@@ -155,14 +145,12 @@ VideoBuffer * SaveRenderer::Render(GameSave * save, bool decorations, bool fire,
 	}
 	if(doCollapse)
 		save->Collapse();
-
+	g->Release();
 	return tempThumb;
 }
 
 VideoBuffer * SaveRenderer::Render(unsigned char * saveData, int dataSize, bool decorations, bool fire)
 {
-	std::lock_guard<std::mutex> g(renderMutex);
-
 	GameSave * tempSave;
 	try {
 		tempSave = new GameSave((char*)saveData, dataSize);
@@ -176,10 +164,9 @@ VideoBuffer * SaveRenderer::Render(unsigned char * saveData, int dataSize, bool 
 	}
 	VideoBuffer * thumb = Render(tempSave, decorations, fire);
 	delete tempSave;
-
 	return thumb;
 }
 
-SaveRenderer::~SaveRenderer()
-{
+SaveRenderer::~SaveRenderer() {
 }
+

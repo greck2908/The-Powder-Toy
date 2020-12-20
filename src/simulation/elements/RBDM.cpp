@@ -1,6 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-void Element::Element_RBDM()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_RBDM PT_RBDM 41
+Element_RBDM::Element_RBDM()
 {
 	Identifier = "DEFAULT_PT_RBDM";
 	Name = "RBDM";
@@ -26,6 +26,7 @@ void Element::Element_RBDM()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 240;
 	Description = "Rubidium. Explosive, especially on contact with water. Low melting point.";
 
@@ -39,4 +40,8 @@ void Element::Element_RBDM()
 	LowTemperatureTransition = NT;
 	HighTemperature = 312.0f;
 	HighTemperatureTransition = PT_LRBD;
+
+	Update = NULL;
 }
+
+Element_RBDM::~Element_RBDM() {}

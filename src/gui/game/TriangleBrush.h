@@ -19,7 +19,7 @@ public:
 	{
 		SetRadius(size_);
 	};
-	void GenerateBitmap() override
+	virtual void GenerateBitmap()
 	{
 		delete[] bitmap;
 		bitmap = new unsigned char[size.X*size.Y];

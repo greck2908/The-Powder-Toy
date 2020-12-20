@@ -1,25 +1,24 @@
 #ifndef TASK_H_
 #define TASK_H_
-#include "Config.h"
 
 #include "common/String.h"
-#include <thread>
-#include <mutex>
+#include "common/tpt-thread.h"
+#include "TaskListener.h"
+#include "Config.h"
 
 class TaskListener;
 class Task {
 public:
 	void AddTaskListener(TaskListener * listener);
-	virtual void Start();
+	void Start();
 	int GetProgress();
 	bool GetDone();
 	bool GetSuccess();
 	String GetError();
 	String GetStatus();
-	virtual void Poll();
-	Task();
+	void Poll();
+	Task() : listener(NULL) { progress = 0; thProgress = 0; }
 	virtual ~Task();
-
 protected:
 	int progress;
 	bool done;
@@ -33,13 +32,16 @@ protected:
 	String thStatus;
 	String thError;
 
-	TaskListener *listener;
-	std::mutex taskMutex;
+	TaskListener * listener;
+	pthread_t doWorkThread;
+	pthread_mutex_t taskMutex;
+	pthread_cond_t taskCond;
+
 
 	virtual void before();
 	virtual void after();
 	virtual bool doWork();
-	virtual void doWork_wrapper();
+	TH_ENTRY_POINT static void * doWork_helper(void * ref);
 
 	virtual void notifyProgress(int progress);
 	virtual void notifyError(String error);

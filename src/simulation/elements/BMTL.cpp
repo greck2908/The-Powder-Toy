@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-
-void Element::Element_BMTL()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_BMTL PT_BMTL 29
+Element_BMTL::Element_BMTL()
 {
 	Identifier = "DEFAULT_PT_BMTL";
 	Name = "BMTL";
@@ -28,6 +26,7 @@ void Element::Element_BMTL()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 251;
 	Description = "Breakable metal. Common conductive building material, can melt and break under pressure.";
 
@@ -42,10 +41,11 @@ void Element::Element_BMTL()
 	HighTemperature = 1273.0f;
 	HighTemperatureTransition = PT_LAVA;
 
-	Update = &update;
+	Update = &Element_BMTL::update;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_BMTL static int update(UPDATE_FUNC_ARGS)
+int Element_BMTL::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry;
 	if (parts[i].tmp>1)
@@ -72,3 +72,6 @@ static int update(UPDATE_FUNC_ARGS)
 	}
 	return 0;
 }
+
+
+Element_BMTL::~Element_BMTL() {}

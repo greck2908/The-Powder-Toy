@@ -1,10 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-static void create(ELEMENT_CREATE_FUNC_ARGS);
-
-void Element::Element_CRMC()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_CRMC PT_CRMC 179
+Element_CRMC::Element_CRMC()
 {
 	Identifier = "DEFAULT_PT_CRMC";
 	Name = "CRMC";
@@ -30,6 +26,7 @@ void Element::Element_CRMC()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+273.15f;
 	HeatConduct = 35;
 	Description = "Ceramic. Gets stronger under pressure.";
 
@@ -44,19 +41,20 @@ void Element::Element_CRMC()
 	HighTemperature = 2887.15f;
 	HighTemperatureTransition = ST;
 
-	Update = &update;
-	Graphics = &graphics;
-	Create = &create;
+	Update = &Element_CRMC::update;
+	Graphics = &Element_CRMC::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_CRMC static int update(UPDATE_FUNC_ARGS)
+int Element_CRMC::update(UPDATE_FUNC_ARGS)
 {
 	if (sim->pv[y/CELL][x/CELL] < -30.0f)
 		sim->create_part(i, x, y, PT_CLST);
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_CRMC static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_CRMC::graphics(GRAPHICS_FUNC_ARGS)
 {
 	int z = (cpart->tmp2 - 2) * 8;
 	*colr += z;
@@ -65,7 +63,5 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	return 0;
 }
 
-static void create(ELEMENT_CREATE_FUNC_ARGS)
-{
-	sim->parts[i].tmp2 = RNG::Ref().between(0, 4);
-}
+Element_CRMC::~Element_CRMC() {}
+

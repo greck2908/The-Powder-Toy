@@ -1,6 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-void Element::Element_BHOL()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_BHOL PT_BHOL 39
+Element_BHOL::Element_BHOL()
 {
 	Identifier = "DEFAULT_PT_BHOL";
 	Name = "VACU";
@@ -26,7 +26,7 @@ void Element::Element_BHOL()
 
 	Weight = 100;
 
-	DefaultProperties.temp = R_TEMP + 70.0f + 273.15f;
+	Temperature = R_TEMP+70.0f+273.15f;
 	HeatConduct = 255;
 	Description = "Vacuum, sucks in other particles and heats up.";
 
@@ -40,4 +40,8 @@ void Element::Element_BHOL()
 	LowTemperatureTransition = NT;
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
+
+	Update = NULL;
 }
+
+Element_BHOL::~Element_BHOL() {}

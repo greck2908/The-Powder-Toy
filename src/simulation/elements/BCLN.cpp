@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-
-void Element::Element_BCLN()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_BCLN PT_BCLN 93
+Element_BCLN::Element_BCLN()
 {
 	Identifier = "DEFAULT_PT_BCLN";
 	Name = "BCLN";
@@ -28,10 +26,11 @@ void Element::Element_BCLN()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 251;
 	Description = "Breakable Clone.";
 
-	Properties = TYPE_SOLID | PROP_LIFE_DEC | PROP_LIFE_KILL_DEC | PROP_NOCTYPEDRAW;
+	Properties = TYPE_SOLID|PROP_LIFE_DEC|PROP_LIFE_KILL_DEC|PROP_DRAWONCTYPE|PROP_NOCTYPEDRAW;
 
 	LowPressure = IPL;
 	LowPressureTransition = NT;
@@ -42,13 +41,13 @@ void Element::Element_BCLN()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
-	CtypeDraw = &Element::ctypeDrawVInTmp;
+	Update = &Element_BCLN::update;
 }
 
-constexpr float ADVECTION = 0.1f;
+#define ADVECTION 0.1f
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_BCLN static int update(UPDATE_FUNC_ARGS)
+int Element_BCLN::update(UPDATE_FUNC_ARGS)
 {
 	if (!parts[i].life && sim->pv[y/CELL][x/CELL]>4.0f)
 		parts[i].life = RNG::Ref().between(80, 119);
@@ -57,7 +56,7 @@ static int update(UPDATE_FUNC_ARGS)
 		parts[i].vx += ADVECTION*sim->vx[y/CELL][x/CELL];
 		parts[i].vy += ADVECTION*sim->vy[y/CELL][x/CELL];
 	}
-	if (parts[i].ctype<=0 || parts[i].ctype>=PT_NUM || !sim->elements[parts[i].ctype].Enabled)
+	if (parts[i].ctype<=0 || parts[i].ctype>=PT_NUM || !sim->elements[parts[i].ctype].Enabled || (parts[i].ctype==PT_LIFE && (parts[i].tmp<0 || parts[i].tmp>=NGOL)))
 	{
 		int r, rx, ry, rt;
 		for (rx=-1; rx<2; rx++)
@@ -96,3 +95,6 @@ static int update(UPDATE_FUNC_ARGS)
 	}
 	return 0;
 }
+
+
+Element_BCLN::~Element_BCLN() {}

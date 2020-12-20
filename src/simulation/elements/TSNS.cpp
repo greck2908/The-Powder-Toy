@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-
-void Element::Element_TSNS()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_TSNS PT_TSNS 164
+Element_TSNS::Element_TSNS()
 {
 	Identifier = "DEFAULT_PT_TSNS";
 	Name = "TSNS";
@@ -28,6 +26,7 @@ void Element::Element_TSNS()
 
 	Weight = 100;
 
+	Temperature = R_TEMP + 273.15f;
 	HeatConduct = 0;
 	Description = "Temperature sensor, creates a spark when there's a nearby particle with a greater temperature.";
 
@@ -42,12 +41,11 @@ void Element::Element_TSNS()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	DefaultProperties.tmp2 = 2;
-
-	Update = &update;
+	Update = &Element_TSNS::update;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_TSNS static int update(UPDATE_FUNC_ARGS)
+int Element_TSNS::update(UPDATE_FUNC_ARGS)
 {
 	int rd = parts[i].tmp2;
 	if (rd > 25)
@@ -60,8 +58,6 @@ static int update(UPDATE_FUNC_ARGS)
 				if (BOUNDS_CHECK && (rx || ry))
 				{
 					int r = pmap[y+ry][x+rx];
-					if (!r)
-						r = sim->photons[y+ry][x+rx];
 					if (!r)
 						continue;
 					int rt = TYP(r);
@@ -122,3 +118,7 @@ static int update(UPDATE_FUNC_ARGS)
 	}
 	return 0;
 }
+
+
+
+Element_TSNS::~Element_TSNS() {}

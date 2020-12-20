@@ -1,6 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-void Element::Element_SAND()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_SAND PT_SAND 44
+Element_SAND::Element_SAND()
 {
 	Identifier = "DEFAULT_PT_SAND";
 	Name = "SAND";
@@ -26,6 +26,7 @@ void Element::Element_SAND()
 
 	Weight = 90;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 150;
 	Description = "Sand, Heavy particles. Melts into glass.";
 
@@ -39,4 +40,8 @@ void Element::Element_SAND()
 	LowTemperatureTransition = NT;
 	HighTemperature = 1973.0f;
 	HighTemperatureTransition = PT_LAVA;
+
+	Update = NULL;
 }
+
+Element_SAND::~Element_SAND() {}

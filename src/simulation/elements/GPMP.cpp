@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_GPMP()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_GPMP PT_GPMP 154
+Element_GPMP::Element_GPMP()
 {
 	Identifier = "DEFAULT_PT_GPMP";
 	Name = "GPMP";
@@ -29,6 +26,7 @@ void Element::Element_GPMP()
 
 	Weight = 100;
 
+	Temperature = 0.0f		+273.15f;
 	HeatConduct = 0;
 	Description = "Gravity pump. Changes gravity to its temp when activated. (use HEAT/COOL)";
 
@@ -43,13 +41,12 @@ void Element::Element_GPMP()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	DefaultProperties.life = 10;
-
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_GPMP::update;
+	Graphics = &Element_GPMP::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_GPMP static int update(UPDATE_FUNC_ARGS)
+int Element_GPMP::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry;
 	if (parts[i].life!=10)
@@ -84,10 +81,16 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+//#TPT-Directive ElementHeader Element_GPMP static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_GPMP::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	int lifemod = ((cpart->life>10?10:cpart->life)*19);
 	*colg += lifemod;
 	*colb += lifemod;
 	return 0;
 }
+
+
+Element_GPMP::~Element_GPMP() {}

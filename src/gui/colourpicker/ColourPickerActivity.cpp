@@ -1,64 +1,72 @@
+#include <algorithm>
+#include <iomanip>
 #include "ColourPickerActivity.h"
-
 #include "gui/interface/Textbox.h"
-#include "gui/interface/Button.h"
 #include "gui/interface/Label.h"
 #include "gui/interface/Keys.h"
+#include "gui/game/Tool.h"
 #include "gui/Style.h"
+#include "Format.h"
+#include "gui/game/GameModel.h"
 
-#include "graphics/Graphics.h"
-
-#include "Misc.h"
-
-ColourPickerActivity::ColourPickerActivity(ui::Colour initialColour, OnPicked onPicked_) :
+ColourPickerActivity::ColourPickerActivity(ui::Colour initialColour, ColourPickedCallback * callback) :
 	WindowActivity(ui::Point(-1, -1), ui::Point(266, 175)),
 	currentHue(0),
 	currentSaturation(0),
 	currentValue(0),
 	mouseDown(false),
 	valueMouseDown(false),
-	onPicked(onPicked_)
+	callback(callback)
 {
-	auto colourChange = [this] {
-		int r, g, b, alpha;
-		r = rValue->GetText().ToNumber<int>(true);
-		g = gValue->GetText().ToNumber<int>(true);
-		b = bValue->GetText().ToNumber<int>(true);
-		alpha = aValue->GetText().ToNumber<int>(true);
-		if (r > 255)
-			r = 255;
-		if (g > 255)
-			g = 255;
-		if (b > 255)
-			b = 255;
-		if (alpha > 255)
-			alpha = 255;
 
-		RGB_to_HSV(r, g, b, &currentHue, &currentSaturation, &currentValue);
-		currentAlpha = alpha;
-		UpdateTextboxes(r, g, b, alpha);
+	class ColourChange : public ui::TextboxAction
+	{
+		ColourPickerActivity * a;
+	public:
+		ColourChange(ColourPickerActivity * a) : a(a) {}
+
+		void TextChangedCallback(ui::Textbox * sender)
+		{
+			int r, g, b, alpha;
+			r = a->rValue->GetText().ToNumber<int>(true);
+			g = a->gValue->GetText().ToNumber<int>(true);
+			b = a->bValue->GetText().ToNumber<int>(true);
+			alpha = a->aValue->GetText().ToNumber<int>(true);
+			if (r > 255)
+				r = 255;
+			if (g > 255)
+				g = 255;
+			if (b > 255)
+				b = 255;
+			if (alpha > 255)
+				alpha = 255;
+
+			RGB_to_HSV(r, g, b, &a->currentHue, &a->currentSaturation, &a->currentValue);
+			a->currentAlpha = alpha;
+			a->UpdateTextboxes(r, g, b, alpha);
+		}
 	};
 
 	rValue = new ui::Textbox(ui::Point(5, Size.Y-23), ui::Point(30, 17), "255");
-	rValue->SetActionCallback({ colourChange });
+	rValue->SetActionCallback(new ColourChange(this));
 	rValue->SetLimit(3);
 	rValue->SetInputType(ui::Textbox::Number);
 	AddComponent(rValue);
 
 	gValue = new ui::Textbox(ui::Point(40, Size.Y-23), ui::Point(30, 17), "255");
-	gValue->SetActionCallback({ colourChange });
+	gValue->SetActionCallback(new ColourChange(this));
 	gValue->SetLimit(3);
 	gValue->SetInputType(ui::Textbox::Number);
 	AddComponent(gValue);
 
 	bValue = new ui::Textbox(ui::Point(75, Size.Y-23), ui::Point(30, 17), "255");
-	bValue->SetActionCallback({ colourChange });
+	bValue->SetActionCallback(new ColourChange(this));
 	bValue->SetLimit(3);
 	bValue->SetInputType(ui::Textbox::Number);
 	AddComponent(bValue);
 
 	aValue = new ui::Textbox(ui::Point(110, Size.Y-23), ui::Point(30, 17), "255");
-	aValue->SetActionCallback({ colourChange });
+	aValue->SetActionCallback(new ColourChange(this));
 	aValue->SetLimit(3);
 	aValue->SetInputType(ui::Textbox::Number);
 	AddComponent(aValue);
@@ -66,17 +74,26 @@ ColourPickerActivity::ColourPickerActivity(ui::Colour initialColour, OnPicked on
 	hexValue = new::ui::Label(ui::Point(150, Size.Y-23), ui::Point(53, 17), "0xFFFFFFFF");
 	AddComponent(hexValue);
 
+	class OkayAction: public ui::ButtonAction
+	{
+		ColourPickerActivity * a;
+	public:
+		OkayAction(ColourPickerActivity * a) : a(a) { }
+		void ActionCallback(ui::Button * sender)
+		{
+			int Red, Green, Blue;
+			Red = a->rValue->GetText().ToNumber<int>(true);
+			Green = a->gValue->GetText().ToNumber<int>(true);
+			Blue = a->bValue->GetText().ToNumber<int>(true);
+			ui::Colour col(Red, Green, Blue, a->currentAlpha);
+			if(a->callback)
+				a->callback->ColourPicked(col);
+			a->Exit();
+		}
+	};
+
 	ui::Button * doneButton = new ui::Button(ui::Point(Size.X-45, Size.Y-23), ui::Point(40, 17), "Done");
-	doneButton->SetActionCallback({ [this] {
-		int Red, Green, Blue;
-		Red = rValue->GetText().ToNumber<int>(true);
-		Green = gValue->GetText().ToNumber<int>(true);
-		Blue = bValue->GetText().ToNumber<int>(true);
-		ui::Colour col(Red, Green, Blue, currentAlpha);
-		if (onPicked)
-			onPicked(col);
-		Exit();
-	} });
+	doneButton->SetActionCallback(new OkayAction(this));
 	AddComponent(doneButton);
 	SetOkayButton(doneButton);
 
@@ -298,3 +315,8 @@ void ColourPickerActivity::OnDraw()
 	g->xor_line(offsetX+currentValueX, offsetY+4+128, offsetX+currentValueX, offsetY+13+128);
 	g->xor_line(offsetX+currentValueX+1, offsetY+4+128, offsetX+currentValueX+1, offsetY+13+128);
 }
+
+ColourPickerActivity::~ColourPickerActivity() {
+	delete callback;
+}
+

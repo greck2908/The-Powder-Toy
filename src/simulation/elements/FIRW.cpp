@@ -1,10 +1,7 @@
-#include "simulation/ElementCommon.h"
+#include "simulation/Elements.h"
 #include "hmap.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_FIRW()
+//#TPT-Directive ElementClass Element_FIRW PT_FIRW 69
+Element_FIRW::Element_FIRW()
 {
 	Identifier = "DEFAULT_PT_FIRW";
 	Name = "FIRW";
@@ -30,6 +27,7 @@ void Element::Element_FIRW()
 
 	Weight = 55;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 70;
 	Description = "Fireworks! Colorful, set off by fire.";
 
@@ -44,11 +42,12 @@ void Element::Element_FIRW()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_FIRW::update;
+	Graphics = &Element_FIRW::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_FIRW static int update(UPDATE_FUNC_ARGS)
+int Element_FIRW::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry, rt, np;
 	if (parts[i].tmp<=0) {
@@ -115,7 +114,10 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+//#TPT-Directive ElementHeader Element_FIRW static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_FIRW::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	if(cpart->tmp > 0)
 	{
@@ -123,3 +125,6 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	}
 	return 0;
 }
+
+
+Element_FIRW::~Element_FIRW() {}

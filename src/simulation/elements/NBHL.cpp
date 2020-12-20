@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-
-void Element::Element_NBHL()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_NBHL PT_NBHL 150
+Element_NBHL::Element_NBHL()
 {
 	Identifier = "DEFAULT_PT_NBHL";
 	Name = "BHOL";
@@ -28,6 +26,7 @@ void Element::Element_NBHL()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 186;
 	Description = "Black hole, sucks in particles using gravity. (Requires Newtonian gravity)";
 
@@ -42,10 +41,11 @@ void Element::Element_NBHL()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
+	Update = &Element_NBHL::update;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_NBHL static int update(UPDATE_FUNC_ARGS)
+int Element_NBHL::update(UPDATE_FUNC_ARGS)
 {
 	if (parts[i].tmp)
 		sim->gravmap[(y/CELL)*(XRES/CELL)+(x/CELL)] += restrict_flt(0.001f*parts[i].tmp, 0.1f, 51.2f);
@@ -53,3 +53,6 @@ static int update(UPDATE_FUNC_ARGS)
 		sim->gravmap[(y/CELL)*(XRES/CELL)+(x/CELL)] += 0.1f;
 	return 0;
 }
+
+
+Element_NBHL::~Element_NBHL() {}

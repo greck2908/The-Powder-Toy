@@ -1,6 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-void Element::Element_INST()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_INST PT_INST 106
+Element_INST::Element_INST()
 {
 	Identifier = "DEFAULT_PT_INST";
 	Name = "INST";
@@ -26,6 +26,7 @@ void Element::Element_INST()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 251;
 	Description = "Instantly conducts, PSCN to charge, NSCN to take.";
 
@@ -39,4 +40,8 @@ void Element::Element_INST()
 	LowTemperatureTransition = NT;
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
+
+	Update = NULL;
 }
+
+Element_INST::~Element_INST() {}

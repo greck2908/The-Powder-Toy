@@ -1,14 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-static void create(ELEMENT_CREATE_FUNC_ARGS);
-static void init_graphics();
-static int trymovetron(Simulation * sim, int x, int y, int dir, int i, int len);
-static bool canmovetron(Simulation * sim, int r, int len);
-static int new_tronhead(Simulation * sim, int x, int y, int i, int direction);
-
-void Element::Element_TRON()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_TRON PT_TRON 143
+Element_TRON::Element_TRON()
 {
 	Identifier = "DEFAULT_PT_TRON";
 	Name = "TRON";
@@ -34,7 +26,7 @@ void Element::Element_TRON()
 
 	Weight = 100;
 
-	DefaultProperties.temp = 0.0f;
+	Temperature = 0.0f;
 	HeatConduct = 40;
 	Description = "Smart particles, Travels in straight lines and avoids obstacles. Grows with time.";
 
@@ -49,11 +41,10 @@ void Element::Element_TRON()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
-	Graphics = &graphics;
-	Create = &create;
+	Update = &Element_TRON::update;
+	Graphics = &Element_TRON::graphics;
 
-	init_graphics();
+	Element_TRON::init_graphics();
 }
 
 /* TRON element is meant to resemble a tron bike (or worm) moving around and trying to avoid obstacles itself.
@@ -84,7 +75,8 @@ int tron_rx[4] = {-1, 0, 1, 0};
 int tron_ry[4] = { 0,-1, 0, 1};
 unsigned int tron_colours[32];
 
-static void init_graphics()
+//#TPT-Directive ElementHeader Element_TRON static void init_graphics()
+void Element_TRON::init_graphics()
 {
 	int i;
 	int r, g, b;
@@ -95,7 +87,8 @@ static void init_graphics()
 	}
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_TRON static int update(UPDATE_FUNC_ARGS)
+int Element_TRON::update(UPDATE_FUNC_ARGS)
 {
 	if (parts[i].tmp&TRON_WAIT)
 	{
@@ -118,7 +111,7 @@ static int update(UPDATE_FUNC_ARGS)
 
 		//check in front
 		//do sight check
-		firstdircheck = trymovetron(sim,x,y,direction,i,parts[i].tmp2);
+		firstdircheck = Element_TRON::trymovetron(sim,x,y,direction,i,parts[i].tmp2);
 		if (firstdircheck < parts[i].tmp2)
 		{
 			if (parts[i].tmp & TRON_NORANDOM)
@@ -145,7 +138,7 @@ static int update(UPDATE_FUNC_ARGS)
 		if (lastdircheck > seconddircheck && lastdircheck > firstdircheck)
 			direction = lastdir;
 		//now try making new head, even if it fails
-		if (new_tronhead(sim,x + tron_rx[direction],y + tron_ry[direction],i,direction) == -1)
+		if (Element_TRON::new_tronhead(sim,x + tron_rx[direction],y + tron_ry[direction],i,direction) == -1)
 		{
 			//ohgod crash
 			parts[i].tmp |= TRON_DEATH;
@@ -165,7 +158,10 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+
+//#TPT-Directive ElementHeader Element_TRON static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_TRON::graphics(GRAPHICS_FUNC_ARGS)
 {
 	unsigned int col = tron_colours[(cpart->tmp&0xF800)>>11];
 	if(cpart->tmp & TRON_HEAD)
@@ -190,18 +186,8 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	return 0;
 }
 
-static void create(ELEMENT_CREATE_FUNC_ARGS)
-{
-	int randhue = RNG::Ref().between(0, 359);
-	int randomdir = RNG::Ref().between(0, 3);
-	// Set as a head and a direction
-	sim->parts[i].tmp = 1 | (randomdir << 5) | (randhue << 7);
-	// Tail
-	sim->parts[i].tmp2 = 4;
-	sim->parts[i].life = 5;
-}
-
-static int new_tronhead(Simulation * sim, int x, int y, int i, int direction)
+//#TPT-Directive ElementHeader Element_TRON static int new_tronhead(Simulation * sim, int x, int y, int i, int direction)
+int Element_TRON::new_tronhead(Simulation * sim, int x, int y, int i, int direction)
 {
 	int np = sim->create_part(-1, x , y ,PT_TRON);
 	if (np==-1)
@@ -223,7 +209,8 @@ static int new_tronhead(Simulation * sim, int x, int y, int i, int direction)
 	return 1;
 }
 
-static int trymovetron(Simulation * sim, int x, int y, int dir, int i, int len)
+//#TPT-Directive ElementHeader Element_TRON static int trymovetron(Simulation * sim, int x, int y, int dir, int i, int len)
+int Element_TRON::trymovetron(Simulation * sim, int x, int y, int dir, int i, int len)
 {
 	int k,j,r,rx,ry,tx,ty,count;
 	count = 0;
@@ -268,7 +255,8 @@ static int trymovetron(Simulation * sim, int x, int y, int dir, int i, int len)
 	return count;
 }
 
-static bool canmovetron(Simulation * sim, int r, int len)
+//#TPT-Directive ElementHeader Element_TRON static bool canmovetron(Simulation * sim, int r, int len)
+bool Element_TRON::canmovetron(Simulation * sim, int r, int len)
 {
 	if (!r || (TYP(r) == PT_SWCH && sim->parts[ID(r)].life >= 10) || (TYP(r) == PT_INVIS && sim->parts[ID(r)].tmp2 == 1))
 		return true;
@@ -276,3 +264,5 @@ static bool canmovetron(Simulation * sim, int r, int len)
 		return true;
 	return false;
 }
+
+Element_TRON::~Element_TRON() {}

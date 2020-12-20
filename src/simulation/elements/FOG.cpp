@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-
-void Element::Element_FOG()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_FOG PT_FOG 92
+Element_FOG::Element_FOG()
 {
 	Identifier = "DEFAULT_PT_FOG";
 	Name = "FOG";
@@ -28,7 +26,7 @@ void Element::Element_FOG()
 
 	Weight = 1;
 
-	DefaultProperties.temp = 243.15f;
+	Temperature = 243.15f;
 	HeatConduct = 100;
 	Description = "Fog, created when an electric current is passed through RIME.";
 
@@ -43,10 +41,11 @@ void Element::Element_FOG()
 	HighTemperature = 373.15f;
 	HighTemperatureTransition = PT_WTRV;
 
-	Update = &update;
+	Update = &Element_FOG::update;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_FOG static int update(UPDATE_FUNC_ARGS)
+int Element_FOG::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry;
 	for (rx=-1; rx<2; rx++)
@@ -67,3 +66,6 @@ static int update(UPDATE_FUNC_ARGS)
 			}
 	return 0;
 }
+
+
+Element_FOG::~Element_FOG() {}

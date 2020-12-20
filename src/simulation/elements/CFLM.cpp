@@ -1,10 +1,8 @@
-#include "simulation/ElementCommon.h"
+#include "simulation/Elements.h"
 #include "hmap.h"
 
-static int graphics(GRAPHICS_FUNC_ARGS);
-static void create(ELEMENT_CREATE_FUNC_ARGS);
-
-void Element::Element_CFLM()
+//#TPT-Directive ElementClass Element_CFLM PT_CFLM 68
+Element_CFLM::Element_CFLM()
 {
 	Identifier = "DEFAULT_PT_HFLM";
 	Name = "CFLM";
@@ -30,7 +28,7 @@ void Element::Element_CFLM()
 
 	Weight = 2;
 
-	DefaultProperties.temp = 0.0f;
+	Temperature = 0.0f;
 	HeatConduct = 88;
 	Description = "Sub-zero flame.";
 
@@ -45,11 +43,13 @@ void Element::Element_CFLM()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Graphics = &graphics;
-	Create = &create;
+	Update = NULL;
+	Graphics = &Element_CFLM::graphics;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_CFLM static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_CFLM::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	int caddress = restrict_flt(restrict_flt((float)((int)(cpart->life/2)), 0.0f, 200.0f)*3, 0.0f, (200.0f*3)-3);
 	*colr = hflm_data[caddress];
@@ -67,7 +67,5 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	return 0;
 }
 
-static void create(ELEMENT_CREATE_FUNC_ARGS)
-{
-	sim->parts[i].life = RNG::Ref().between(50, 199);
-}
+
+Element_CFLM::~Element_CFLM() {}

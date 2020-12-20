@@ -1,7 +1,10 @@
 #include "SaveFile.h"
 #include "GameSave.h"
+#include "Client.h"
+#include "gui/search/Thumbnail.h"
 
 SaveFile::SaveFile(SaveFile & save):
+	thumbnail(NULL),
 	gameSave(NULL),
 	filename(save.filename),
 	displayName(save.displayName),
@@ -9,9 +12,22 @@ SaveFile::SaveFile(SaveFile & save):
 {
 	if (save.gameSave)
 		gameSave = new GameSave(*save.gameSave);
+	if (save.thumbnail)
+		thumbnail = new Thumbnail(*save.thumbnail);
+}
+
+Thumbnail * SaveFile::GetThumbnail()
+{
+	return thumbnail;
+}
+
+void SaveFile::SetThumbnail(Thumbnail * thumb)
+{
+	thumbnail = thumb;
 }
 
 SaveFile::SaveFile(ByteString filename):
+	thumbnail(NULL),
 	gameSave(NULL),
 	filename(filename),
 	displayName(filename.FromUtf8()),
@@ -62,5 +78,6 @@ void SaveFile::SetLoadingError(String error)
 
 SaveFile::~SaveFile() {
 	delete gameSave;
+	delete thumbnail;
 }
 

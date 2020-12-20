@@ -1,21 +1,19 @@
 #ifndef STAMPSCONTROLLER_H_
 #define STAMPSCONTROLLER_H_
-#include "Config.h"
 
-#include "common/String.h"
+#include "Controller.h"
+#include "LocalBrowserView.h"
+#include "client/SaveInfo.h"
 
-#include <functional>
-
-class SaveFile;
 class LocalBrowserView;
 class LocalBrowserModel;
 class LocalBrowserController {
+	ControllerCallback * callback;
 	LocalBrowserView * browserView;
 	LocalBrowserModel * browserModel;
-	std::function<void ()> onDone;
 public:
 	bool HasDone;
-	LocalBrowserController(std::function<void ()> onDone = nullptr);
+	LocalBrowserController(ControllerCallback * callback);
 	LocalBrowserView * GetView() {return browserView;}
 	SaveFile * GetSave();
 	void RemoveSelected();

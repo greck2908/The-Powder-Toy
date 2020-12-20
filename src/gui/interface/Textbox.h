@@ -1,36 +1,42 @@
 #ifndef TEXTBOX_H
 #define TEXTBOX_H
 
-#include "Label.h"
+#include "common/String.h"
 
-#include <functional>
+#include "Label.h"
+#include "PowderToy.h"
 
 namespace ui
 {
-struct TextboxAction
+class Textbox;
+class TextboxAction
 {
-	std::function<void ()> change;
+public:
+	virtual void TextChangedCallback(ui::Textbox * sender) {}
+	virtual ~TextboxAction() {}
 };
 
 class Textbox : public Label
 {
+	friend class TextboxAction;
+
 	void AfterTextChange(bool changed);
 
 public:
 	bool ReadOnly;
 	enum ValidInput { All, Multiline, Numeric, Number }; // Numeric doesn't delete trailing 0's
 	Textbox(Point position, Point size, String textboxText = String(), String textboxPlaceholder = String());
-	virtual ~Textbox() = default;
+	virtual ~Textbox();
 
-	void SetText(String text) override;
-	String GetText() override;
+	virtual void SetText(String text);
+	virtual String GetText();
 
 	virtual void SetPlaceholder(String text);
 
 	void SetBorder(bool border) { this->border = border; }
 	void SetHidden(bool hidden);
 	bool GetHidden() { return masked; }
-	void SetActionCallback(TextboxAction action) { actionCallback = action; }
+	void SetActionCallback(TextboxAction * action) { actionCallback = action; }
 
 	void SetLimit(size_t limit);
 	size_t GetLimit();
@@ -44,27 +50,27 @@ public:
 	bool CharacterValid(int character);
 	bool StringValid(String text);
 
-	void Tick(float dt) override;
-	void OnContextMenuAction(int item) override;
-	void OnMouseClick(int x, int y, unsigned button) override;
-	void OnMouseUp(int x, int y, unsigned button) override;
-	void OnMouseMoved(int localx, int localy, int dx, int dy) override;
-	void OnKeyPress(int key, int scan, bool repeat, bool shift, bool ctrl, bool alt) override;
-	void OnVKeyPress(int key, int scan, bool repeat, bool shift, bool ctrl, bool alt);
-	void OnKeyRelease(int key, int scan, bool repeat, bool shift, bool ctrl, bool alt) override;
+	virtual void Tick(float dt);
+	virtual void OnContextMenuAction(int item);
+	virtual void OnMouseClick(int x, int y, unsigned button);
+	virtual void OnMouseUp(int x, int y, unsigned button);
+	virtual void OnMouseMoved(int localx, int localy, int dx, int dy);
+	virtual void OnKeyPress(int key, int scan, bool repeat, bool shift, bool ctrl, bool alt);
+	virtual void OnVKeyPress(int key, int scan, bool repeat, bool shift, bool ctrl, bool alt);
+	virtual void OnKeyRelease(int key, int scan, bool repeat, bool shift, bool ctrl, bool alt);
 	void OnTextInput(String text) override;
-	void Draw(const Point& screenPos) override;
+	virtual void Draw(const Point& screenPos);
 
 protected:
 	ValidInput inputType;
 	size_t limit;
 	unsigned long repeatTime;
 	int keyDown;
-	unsigned short characterDown;
+	Uint16 characterDown;
 	bool mouseDown;
 	bool masked, border;
 	int cursor, cursorPositionX, cursorPositionY;
-	TextboxAction actionCallback;
+	TextboxAction *actionCallback;
 	String backingText;
 	String placeHolder;
 

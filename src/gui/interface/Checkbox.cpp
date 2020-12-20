@@ -1,7 +1,5 @@
 #include "Checkbox.h"
-
 #include "graphics/Graphics.h"
-
 #include "gui/interface/Window.h"
 
 using namespace ui;
@@ -11,7 +9,8 @@ Checkbox::Checkbox(ui::Point position, ui::Point size, String text, String toolT
 	text(text),
 	toolTip(toolTip),
 	checked(false),
-	isMouseOver(false)
+	isMouseOver(false),
+	actionCallback(NULL)
 {
 
 }
@@ -43,8 +42,8 @@ void Checkbox::OnMouseClick(int x, int y, unsigned int button)
 	{
 		checked = true;
 	}
-	if (actionCallback.action)
-		actionCallback.action();
+	if(actionCallback)
+		actionCallback->ActionCallback(this);
 }
 
 void Checkbox::OnMouseUp(int x, int y, unsigned int button)
@@ -96,3 +95,14 @@ void Checkbox::Draw(const Point& screenPos)
 			g->draw_icon(screenPos.X+iconPosition.X, screenPos.Y+iconPosition.Y, Appearance.icon, 200);
 	}
 }
+
+void Checkbox::SetActionCallback(CheckboxAction * action)
+{
+	delete actionCallback;
+	actionCallback = action;
+}
+
+Checkbox::~Checkbox() {
+	delete actionCallback;
+}
+

@@ -1,5 +1,3 @@
-#include "Update.h"
-
 #include <cstdio>
 #include <cstdlib>
 #ifndef WIN
@@ -9,7 +7,7 @@
 #include <malloc.h>
 #endif
 #include <cstring>
-#include <cstdint>
+#include <stdint.h>
 
 #ifdef WIN
 #define NOMINMAX
@@ -23,6 +21,7 @@
 #include <errno.h>
 #endif
 
+#include "Update.h"
 #include "Platform.h"
 
 // returns 1 on failure, 0 on success

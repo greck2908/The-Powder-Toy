@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_HSWC()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_HSWC PT_HSWC 75
+Element_HSWC::Element_HSWC()
 {
 	Identifier = "DEFAULT_PT_HSWC";
 	Name = "HSWC";
@@ -29,6 +26,7 @@ void Element::Element_HSWC()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 251;
 	Description = "Heat switch. Conducts heat only when activated.";
 
@@ -43,11 +41,12 @@ void Element::Element_HSWC()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_HSWC::update;
+	Graphics = &Element_HSWC::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_HSWC static int update(UPDATE_FUNC_ARGS)
+int Element_HSWC::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry;
 	if (parts[i].life!=10)
@@ -63,8 +62,6 @@ static int update(UPDATE_FUNC_ARGS)
 				if (BOUNDS_CHECK && (rx || ry))
 				{
 					r = pmap[y+ry][x+rx];
-					if (!r)
-						r = sim->photons[y+ry][x+rx];
 					if (!r)
 						continue;
 					if (TYP(r) == PT_HSWC)
@@ -88,9 +85,15 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+//#TPT-Directive ElementHeader Element_HSWC static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_HSWC::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	int lifemod = ((cpart->life>10?10:cpart->life)*19);
 	*colr += lifemod;
 	return 0;
 }
+
+
+Element_HSWC::~Element_HSWC() {}

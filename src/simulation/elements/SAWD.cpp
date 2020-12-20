@@ -1,6 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-void Element::Element_SAWD()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_SAWD PT_SAWD 181
+Element_SAWD::Element_SAWD()
 {
 	Identifier = "DEFAULT_PT_SAWD";
 	Name = "SAWD";
@@ -26,6 +26,7 @@ void Element::Element_SAWD()
 
 	Weight = 18;
 
+	Temperature = R_TEMP+273.15f;
 	HeatConduct = 70;
 	Description = "Sawdust. Floats on water.";
 
@@ -40,5 +41,8 @@ void Element::Element_SAWD()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Graphics = NULL; // is this needed?
+	Update = NULL;
+	Graphics = NULL;
 }
+
+Element_SAWD::~Element_SAWD() {}

@@ -1,5 +1,4 @@
 #pragma once
-#include "Config.h"
 
 #include "gui/interface/Window.h"
 
@@ -20,16 +19,16 @@ public:
 	{
 		Show();
 	}
-	void Exit() override
+	virtual void Exit()
 	{
 		Hide();
 		SelfDestruct();
 	}
-	void Show() override
+	virtual void Show()
 	{
 		MakeActiveWindow();
 	}
-	void Hide() override
+	virtual void Hide()
 	{
 		CloseActiveWindow();
 	}

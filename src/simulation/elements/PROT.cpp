@@ -1,11 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-static void create(ELEMENT_CREATE_FUNC_ARGS);
-static int DeutImplosion(Simulation * sim, int n, int x, int y, float temp, int t);
-
-void Element::Element_PROT()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_PROT PT_PROT 173
+Element_PROT::Element_PROT()
 {
 	Identifier = "DEFAULT_PT_PROT";
 	Name = "PROT";
@@ -31,6 +26,7 @@ void Element::Element_PROT()
 
 	Weight = -1;
 
+	Temperature = R_TEMP+273.15f;
 	HeatConduct = 61;
 	Description = "Protons. Transfer heat to materials, and removes sparks.";
 
@@ -45,14 +41,12 @@ void Element::Element_PROT()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	DefaultProperties.life = 75;
-
-	Update = &update;
-	Graphics = &graphics;
-	Create = &create;
+	Update = &Element_PROT::update;
+	Graphics = &Element_PROT::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_PROT static int update(UPDATE_FUNC_ARGS)
+int Element_PROT::update(UPDATE_FUNC_ARGS)
 {
 	sim->pv[y/CELL][x/CELL] -= .003f;
 	int under = pmap[y][x];
@@ -175,7 +169,8 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int DeutImplosion(Simulation * sim, int n, int x, int y, float temp, int t)
+//#TPT-Directive ElementHeader Element_PROT static int DeutImplosion(Simulation * sim, int n, int x, int y, float temp, int t)
+int Element_PROT::DeutImplosion(Simulation * sim, int n, int x, int y, float temp, int t)
 {
 	int i;
 	n = (n/50);
@@ -196,7 +191,8 @@ static int DeutImplosion(Simulation * sim, int n, int x, int y, float temp, int 
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_PROT static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_PROT::graphics(GRAPHICS_FUNC_ARGS)
 {
 	*firea = 7;
 	*firer = 250;
@@ -207,10 +203,4 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	return 1;
 }
 
-static void create(ELEMENT_CREATE_FUNC_ARGS)
-{
-	float a = RNG::Ref().between(0, 35) * 0.17453f;
-	sim->parts[i].life = 680;
-	sim->parts[i].vx = 2.0f * cosf(a);
-	sim->parts[i].vy = 2.0f * sinf(a);
-}
+Element_PROT::~Element_PROT() {}

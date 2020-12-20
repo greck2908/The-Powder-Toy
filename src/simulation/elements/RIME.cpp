@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-
-void Element::Element_RIME()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_RIME PT_RIME 91
+Element_RIME::Element_RIME()
 {
 	Identifier = "DEFAULT_PT_RIME";
 	Name = "RIME";
@@ -28,7 +26,7 @@ void Element::Element_RIME()
 
 	Weight = 100;
 
-	DefaultProperties.temp = -30.0f + 273.15f;
+	Temperature = 243.15f;
 	HeatConduct = 100;
 	Description = "Solid, created when steam cools rapidly and goes through sublimation.";
 
@@ -43,10 +41,11 @@ void Element::Element_RIME()
 	HighTemperature = 273.15f;
 	HighTemperatureTransition = PT_WATR;
 
-	Update = &update;
+	Update = &Element_RIME::update;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_RIME static int update(UPDATE_FUNC_ARGS)
+int Element_RIME::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry;
 	for (rx=-1; rx<2; rx++)
@@ -69,3 +68,6 @@ static int update(UPDATE_FUNC_ARGS)
 			}
 	return 0;
 }
+
+
+Element_RIME::~Element_RIME() {}

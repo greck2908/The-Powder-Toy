@@ -1,6 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-void Element::Element_PSTS()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_PSTS PT_PSTS 112
+Element_PSTS::Element_PSTS()
 {
 	Identifier = "DEFAULT_PT_PSTS";
 	Name = "PSTS";
@@ -26,7 +26,7 @@ void Element::Element_PSTS()
 
 	Weight = 100;
 
-	DefaultProperties.temp = R_TEMP - 2.0f + 273.15f;
+	Temperature = R_TEMP-2.0f	+273.15f;
 	HeatConduct = 29;
 	Description = "Solid form of PSTE.";
 
@@ -40,4 +40,8 @@ void Element::Element_PSTS()
 	LowTemperatureTransition = NT;
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
+
+	Update = NULL;
 }
+
+Element_PSTS::~Element_PSTS() {}

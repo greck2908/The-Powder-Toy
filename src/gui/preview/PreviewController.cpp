@@ -1,24 +1,17 @@
+#include "client/Client.h"
 #include "PreviewController.h"
-
 #include "PreviewView.h"
 #include "PreviewModel.h"
-
-#include "client/Client.h"
-#include "client/SaveInfo.h"
-
 #include "PreviewModelException.h"
-
 #include "gui/dialogues/InformationMessage.h"
 #include "gui/dialogues/ErrorMessage.h"
 #include "gui/login/LoginController.h"
-#include "gui/login/LoginView.h"
-
 #include "Controller.h"
 #include "Platform.h"
-#include "Config.h"
 
-PreviewController::PreviewController(int saveID, int saveDate, bool instant, std::function<void ()> onDone_):
+PreviewController::PreviewController(int saveID, int saveDate, bool instant, ControllerCallback * callback):
 	saveId(saveID),
+	saveDate(saveDate),
 	loginWindow(NULL),
 	HasExited(false)
 {
@@ -37,7 +30,32 @@ PreviewController::PreviewController(int saveID, int saveDate, bool instant, std
 
 	Client::Ref().AddListener(this);
 
-	onDone = onDone_;
+	this->callback = callback;
+	(void)saveDate; //pretend this is used
+}
+
+PreviewController::PreviewController(int saveID, bool instant, ControllerCallback * callback):
+	saveId(saveID),
+	saveDate(0),
+	loginWindow(NULL),
+	HasExited(false)
+{
+	previewModel = new PreviewModel();
+	previewView = new PreviewView();
+	previewModel->AddObserver(previewView);
+	previewView->AttachController(this);
+
+	previewModel->UpdateSave(saveID, 0);
+
+	if(Client::Ref().GetAuthUser().UserID)
+	{
+		previewModel->SetCommentBoxEnabled(true);
+	}
+
+	Client::Ref().AddListener(this);
+
+	this->callback = callback;
+	(void)saveDate; //pretend this is used
 }
 
 void PreviewController::Update()
@@ -135,7 +153,7 @@ void PreviewController::FavouriteSave()
 
 void PreviewController::OpenInBrowser()
 {
-	ByteString uri = ByteString::Build(SCHEME, SERVER, "/Browse/View.html?ID=", saveId);
+	ByteString uri = ByteString::Build("http://", SERVER, "/Browse/View.html?ID=", saveId);
 	Platform::OpenURI(uri);
 }
 
@@ -163,8 +181,8 @@ void PreviewController::Exit()
 {
 	previewView->CloseActiveWindow();
 	HasExited = true;
-	if (onDone)
-		onDone();
+	if(callback)
+		callback->ControllerExit();
 }
 
 PreviewController::~PreviewController()
@@ -173,4 +191,5 @@ PreviewController::~PreviewController()
 	Client::Ref().RemoveListener(this);
 	delete previewModel;
 	delete previewView;
+	delete callback;
 }

@@ -1,4 +1,3 @@
-#include "Config.h"
 #ifdef LUACONSOLE
 // socket.lua from luasocket compiled into a cpp file
 #include "../LuaCompat.h"

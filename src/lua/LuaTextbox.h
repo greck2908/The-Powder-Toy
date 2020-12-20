@@ -12,7 +12,7 @@ class LuaScriptInterface;
 
 class LuaTextbox: public LuaComponent
 {
-	LuaComponentCallback onTextChangedFunction;
+	int onTextChangedFunction;
 	ui::Textbox * textbox;
 	int text(lua_State * l);
 	int readonly(lua_State * l);

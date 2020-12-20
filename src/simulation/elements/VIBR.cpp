@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-int Element_VIBR_update(UPDATE_FUNC_ARGS);
-int Element_VIBR_graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_VIBR()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_VIBR PT_VIBR 165
+Element_VIBR::Element_VIBR()
 {
 	Identifier = "DEFAULT_PT_VIBR";
 	Name = "VIBR";
@@ -29,7 +26,7 @@ void Element::Element_VIBR()
 
 	Weight = 100;
 
-	DefaultProperties.temp = 273.15f;
+	Temperature = 273.15f;
 	HeatConduct = 251;
 	Description = "Vibranium. Stores energy and releases it in violent explosions.";
 
@@ -44,12 +41,12 @@ void Element::Element_VIBR()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &Element_VIBR_update;
-	Graphics = &Element_VIBR_graphics;
+	Update = &Element_VIBR::update;
+	Graphics = &Element_VIBR::graphics;
 }
 
-int Element_VIBR_update(UPDATE_FUNC_ARGS)
-{
+//#TPT-Directive ElementHeader Element_VIBR static int update(UPDATE_FUNC_ARGS)
+int Element_VIBR::update(UPDATE_FUNC_ARGS) {
 	int r, rx, ry, rndstore = 0;
 	int trade, transfer;
 	if (!parts[i].life) //if not exploding
@@ -214,7 +211,8 @@ int Element_VIBR_update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-int Element_VIBR_graphics(GRAPHICS_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_VIBR static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_VIBR::graphics(GRAPHICS_FUNC_ARGS)
 {
 	int gradient = cpart->tmp/10;
 	if (gradient >= 100 || cpart->life)
@@ -251,3 +249,5 @@ int Element_VIBR_graphics(GRAPHICS_FUNC_ARGS)
 	}
 	return 0;
 }
+
+Element_VIBR::~Element_VIBR() {}

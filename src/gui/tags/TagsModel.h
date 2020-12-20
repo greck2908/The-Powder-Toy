@@ -1,6 +1,5 @@
 #ifndef TAGSMODEL_H_
 #define TAGSMODEL_H_
-#include "Config.h"
 
 #include <vector>
 #include "common/String.h"

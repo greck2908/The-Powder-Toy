@@ -6,17 +6,13 @@
 
 class EllipseBrush: public Brush
 {
-	bool perfectCircle;
-
 public:
-	EllipseBrush(ui::Point size, bool perfectCircle = true):
-		Brush(size)
+	EllipseBrush(ui::Point size_):
+		Brush(size_)
 	{
-		this->perfectCircle = perfectCircle;
-		SetRadius(size);
+		SetRadius(size_);
 	}
-
-	void GenerateBitmap() override
+	virtual void GenerateBitmap()
 	{
 		delete[] bitmap;
 		bitmap = new unsigned char[size.X*size.Y];
@@ -35,16 +31,8 @@ public:
 			int yTop = ry+1, yBottom, i;
 			for (i = 0; i <= rx; i++)
 			{
-				if (perfectCircle)
-				{
-					while (pow(i - rx, 2.0) * pow(ry - 0.5, 2.0) + pow(yTop - ry, 2.0) * pow(rx - 0.5, 2.0) <= pow(rx, 2.0) * pow(ry, 2.0))
-						yTop++;
-				}
-				else
-				{
-					while (pow(i - rx, 2.0) * pow(ry, 2.0) + pow(yTop - ry, 2.0) * pow(rx, 2.0) <= pow(rx, 2.0) * pow(ry, 2.0))
-						yTop++;
-				}
+				while (pow(i-rx,2.0)*pow(ry,2.0) + pow(yTop-ry,2.0)*pow(rx,2.0) <= pow(rx,2.0)*pow(ry,2.0))
+					yTop++;
 				yBottom = 2*ry - yTop;
 				for (int j = 0; j <= ry*2; j++)
 				{

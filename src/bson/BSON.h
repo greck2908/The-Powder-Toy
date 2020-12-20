@@ -20,7 +20,6 @@
 
 #ifndef _BSON_H_
 #define _BSON_H_
-#include "Config.h"
 
 #include <ctime>
 #include <cstdlib>
@@ -32,7 +31,7 @@
 
 #if defined(LIN) || defined(USE_STDINT)
 #include <sys/types.h>
-#include <cstdint>
+#include <stdint.h>
 #else
 typedef long long int int64_t;
 typedef unsigned long long int uint64_t;

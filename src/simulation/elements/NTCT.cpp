@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-int Element_NTCT_update(UPDATE_FUNC_ARGS);
-
-void Element::Element_NTCT()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_NTCT PT_NTCT 43
+Element_NTCT::Element_NTCT()
 {
 	Identifier = "DEFAULT_PT_NTCT";
 	Name = "NTCT";
@@ -28,6 +26,7 @@ void Element::Element_NTCT()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 251;
 	Description = "Semi-conductor. Only conducts electricity when hot. (More than 100C)";
 
@@ -42,12 +41,16 @@ void Element::Element_NTCT()
 	HighTemperature = 1687.0f;
 	HighTemperatureTransition = PT_LAVA;
 
-	Update = &Element_NTCT_update;
+	Update = &Element_NTCT::update;
 }
 
-int Element_NTCT_update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_NTCT static int update(UPDATE_FUNC_ARGS)
+int Element_NTCT::update(UPDATE_FUNC_ARGS)
 {
 	if (parts[i].temp>295.0f)
 		parts[i].temp -= 2.5f;
 	return 0;
 }
+
+
+Element_NTCT::~Element_NTCT() {}

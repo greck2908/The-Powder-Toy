@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-
-void Element::Element_URAN()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_URAN PT_URAN 32
+Element_URAN::Element_URAN()
 {
 	Identifier = "DEFAULT_PT_URAN";
 	Name = "URAN";
@@ -29,7 +27,7 @@ void Element::Element_URAN()
 
 	Weight = 90;
 
-	DefaultProperties.temp = R_TEMP + 30.0f + 273.15f;
+	Temperature = R_TEMP+30.0f+273.15f;
 	HeatConduct = 251;
 	Description = "Uranium. Heavy particles. Generates heat under pressure.";
 
@@ -44,10 +42,11 @@ void Element::Element_URAN()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
+	Update = &Element_URAN::update;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_URAN static int update(UPDATE_FUNC_ARGS)
+int Element_URAN::update(UPDATE_FUNC_ARGS)
 {
 	if (!sim->legacy_enable && sim->pv[y/CELL][x/CELL]>0.0f)
 	{
@@ -62,3 +61,6 @@ static int update(UPDATE_FUNC_ARGS)
 	}
 	return 0;
 }
+
+
+Element_URAN::~Element_URAN() {}

@@ -3,17 +3,12 @@
 
 #include <vector>
 #include "Activity.h"
-#include "common/String.h"
-#include "gui/interface/Point.h"
+#include "gui/interface/Window.h"
+#include "gui/interface/Textbox.h"
+#include "gui/game/ToolButton.h"
 
 class Tool;
-class ToolButton;
 class GameController;
-
-namespace ui
-{
-	class Textbox;
-}
 
 class ElementSearchActivity: public WindowActivity
 {
@@ -31,16 +26,17 @@ class ElementSearchActivity: public WindowActivity
 	void searchTools(String query);
 
 public:
+	class ToolAction;
 	bool exit;
 	Tool * GetFirstResult() { return firstResult; }
 	ElementSearchActivity(GameController * gameController, std::vector<Tool*> tools);
 	void SetActiveTool(int selectionState, Tool * tool);
 	virtual ~ElementSearchActivity();
-	void OnTick(float dt) override;
-	void OnKeyPress(int key, int scan, bool repeat, bool shift, bool ctrl, bool alt) override;
-	void OnKeyRelease(int key, int scan, bool repeat, bool shift, bool ctrl, bool alt) override;
-	void OnDraw() override;
-	void ToolTip(ui::Point senderPosition, String ToolTip) override;
+	virtual void OnTick(float dt);
+	virtual void OnKeyPress(int key, int scan, bool repeat, bool shift, bool ctrl, bool alt);
+	virtual void OnKeyRelease(int key, int scan, bool repeat, bool shift, bool ctrl, bool alt);
+	virtual void OnDraw();
+	virtual void ToolTip(ui::Point senderPosition, String ToolTip);
 };
 
 #endif /* ELEMENTSEARCHACTIVITY_H_ */

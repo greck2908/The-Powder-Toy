@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_BRAY()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_BRAY PT_BRAY 127
+Element_BRAY::Element_BRAY()
 {
 	Identifier = "DEFAULT_PT_BRAY";
 	Name = "BRAY";
@@ -28,6 +26,7 @@ void Element::Element_BRAY()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f +273.15f;
 	HeatConduct = 251;
 	Description = "Ray Point. Rays create points when they collide.";
 
@@ -42,12 +41,13 @@ void Element::Element_BRAY()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	DefaultProperties.life = 30;
-
-	Graphics = &graphics;
+	Update = NULL;
+	Graphics = &Element_BRAY::graphics;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_BRAY static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_BRAY::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	int x, trans = 255;
 	if(cpart->tmp==0)
@@ -103,3 +103,6 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	*pixel_mode |= PMODE_BLEND | PMODE_GLOW;
 	return 0;
 }
+
+
+Element_BRAY::~Element_BRAY() {}

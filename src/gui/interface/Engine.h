@@ -1,12 +1,11 @@
 #pragma once
 
 #include <stack>
-#include "common/String.h"
 #include "common/Singleton.h"
-#include "graphics/Pixel.h"
-#include "gui/interface/Point.h"
+#include "graphics/Graphics.h"
+#include "Window.h"
+#include "PowderToy.h"
 
-class Graphics;
 namespace ui
 {
 	class Window;
@@ -25,7 +24,6 @@ namespace ui
 		void ShowWindow(Window * window);
 		int CloseWindow();
 
-		void initialMouse(int x, int y);
 		void onMouseMove(int x, int y);
 		void onMouseClick(int x, int y, unsigned button);
 		void onMouseUnclick(int x, int y, unsigned button);
@@ -35,7 +33,6 @@ namespace ui
 		void onTextInput(String text);
 		void onResize(int newWidth, int newHeight);
 		void onClose();
-		void onFileDrop(ByteString filename);
 
 		void Begin(int width, int height);
 		inline bool Running() { return running_; }
@@ -47,14 +44,10 @@ namespace ui
 		void Break();
 		void UnBreak();
 
-		void SetDrawingFrequencyLimit(int limit) {drawingFrequencyLimit = limit;}
-		inline int GetDrawingFrequencyLimit() {return drawingFrequencyLimit;}
 		void SetFullscreen(bool fullscreen) { Fullscreen = fullscreen; }
 		inline bool GetFullscreen() { return Fullscreen; }
 		void SetAltFullscreen(bool altFullscreen) { this->altFullscreen = altFullscreen; }
 		inline bool GetAltFullscreen() { return altFullscreen; }
-		void SetForceIntegerScaling(bool forceIntegerScaling) { this->forceIntegerScaling = forceIntegerScaling; }
-		inline bool GetForceIntegerScaling() { return forceIntegerScaling; }
 		void SetScale(int scale) { Scale = scale; }
 		inline int GetScale() { return Scale; }
 		void SetResizable(bool resizable) { this->resizable = resizable; }
@@ -84,7 +77,6 @@ namespace ui
 		//inline State* GetState() { return state_; }
 		inline Window* GetWindow() { return state_; }
 		float FpsLimit;
-		int drawingFrequencyLimit;
 		Graphics * g;
 		int Scale;
 		bool Fullscreen;
@@ -92,7 +84,6 @@ namespace ui
 		unsigned int FrameIndex;
 	private:
 		bool altFullscreen;
-		bool forceIntegerScaling = true;
 		bool resizable;
 
 		float dt;
@@ -122,19 +113,6 @@ namespace ui
 
 		int maxWidth;
 		int maxHeight;
-
-		bool momentumScroll;
-
-	public:
-		inline void SetMomentumScroll(bool newMomentumScroll)
-		{
-			momentumScroll = newMomentumScroll;
-		}
-
-		inline bool GetMomentumScroll() const
-		{
-			return momentumScroll;
-		}
 	};
 
 }

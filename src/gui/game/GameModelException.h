@@ -4,16 +4,15 @@
 #include "common/String.h"
 #include <exception>
 
-struct GameModelException: public std::exception
-{
-	ByteString message;
+struct GameModelException: public exception {
+	String message;
 public:
-	GameModelException(String message_): message(message_.ToUtf8()) {}
-	const char * what() const throw() override
+	GameModelException(String message_): message(message_) {}
+	const char * what() const throw()
 	{
-		return message.c_str();
+		return message.ToUtf8().c_str();
 	}
-	~GameModelException() throw() {}
+	~GameModelException() throw() {};
 };
 
 #endif /* GAMEMODELEXCEPTION_H_ */

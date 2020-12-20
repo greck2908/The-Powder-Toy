@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_SPNG()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_SPNG PT_SPNG 90
+Element_SPNG::Element_SPNG()
 {
 	Identifier = "DEFAULT_PT_SPNG";
 	Name = "SPNG";
@@ -29,6 +26,7 @@ void Element::Element_SPNG()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f +273.15f;
 	HeatConduct = 251;
 	Description = "Sponge, absorbs water. Is not a moving solid.";
 
@@ -43,11 +41,12 @@ void Element::Element_SPNG()
 	HighTemperature = 2730.0f;
 	HighTemperatureTransition = PT_FIRE;
 
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_SPNG::update;
+	Graphics = &Element_SPNG::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_SPNG static int update(UPDATE_FUNC_ARGS)
+int Element_SPNG::update(UPDATE_FUNC_ARGS)
 {
 	int r, trade, rx, ry, tmp, np;
 	int limit = 50;
@@ -74,7 +73,7 @@ static int update(UPDATE_FUNC_ARGS)
 						if (parts[i].life<limit && RNG::Ref().chance(50, absorbChanceDenom))
 						{
 							parts[i].life++;
-							if (RNG::Ref().chance(3, 4))
+							if (RNG::Ref().chance(1, 4))
 								sim->kill_part(ID(r));
 							else
 								sim->part_change_type(ID(r), x+rx, y+ry, PT_SALT);
@@ -190,7 +189,10 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+//#TPT-Directive ElementHeader Element_SPNG static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_SPNG::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	*colr -= cpart->life*15;
 	*colg -= cpart->life*15;
@@ -203,3 +205,6 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 		*colb = 20;
 	return 0;
 }
+
+
+Element_SPNG::~Element_SPNG() {}

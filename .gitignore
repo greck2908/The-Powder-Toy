@@ -20,8 +20,6 @@ generated/*
 includes/*
 recordings/
 font/*
-Debug/*
-Release/*
 generate
 Makefile.me
 *.xcodeproj
@@ -58,8 +56,6 @@ Makefile.me
 *.layout
 *.config
 *.creator*
-*.cflags
-*.cxxflags
 *.files
 *.includes
 config.log
@@ -69,7 +65,5 @@ config.log
 *.pyc
 site_scons/site_tools/mfprogram/*.pyc
 site_scons/site_tools/gch/*.pyc
-.vscode/
-.vs/
 
 screenshot_*

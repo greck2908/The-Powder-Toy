@@ -12,8 +12,8 @@ class Spinner: public Component
 	int tickInternal;
 public:
 	Spinner(Point position, Point size);
-	void Tick(float dt) override;
-	void Draw(const Point& screenPos) override;
+	virtual void Tick(float dt);
+	virtual void Draw(const Point& screenPos);
 	virtual ~Spinner();
 };
 

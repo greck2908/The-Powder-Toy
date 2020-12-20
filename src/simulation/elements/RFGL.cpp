@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-int Element_RFRG_update(UPDATE_FUNC_ARGS);
-
-void Element::Element_RFGL()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_RFGL PT_RFGL 184
+Element_RFGL::Element_RFGL()
 {
 	Identifier = "DEFAULT_PT_RFGL";
 	Name = "RFGL";
@@ -28,6 +26,7 @@ void Element::Element_RFGL()
 
 	Weight = 10;
 
+	Temperature = R_TEMP + 273.15f;
 	HeatConduct = 3;
 	Description = "Liquid refrigerant.";
 
@@ -42,5 +41,7 @@ void Element::Element_RFGL()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &Element_RFRG_update;
+	Update = &Element_RFRG::update;
 }
+
+Element_RFGL::~Element_RFGL() {}

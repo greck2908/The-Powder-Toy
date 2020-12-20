@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_GLOW()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_GLOW PT_GLOW 66
+Element_GLOW::Element_GLOW()
 {
 	Identifier = "DEFAULT_PT_GLOW";
 	Name = "GLOW";
@@ -29,7 +26,7 @@ void Element::Element_GLOW()
 
 	Weight = 40;
 
-	DefaultProperties.temp = R_TEMP + 20.0f + 273.15f;
+	Temperature = R_TEMP+20.0f+273.15f;
 	HeatConduct = 44;
 	Description = "Glow, Glows under pressure.";
 
@@ -44,11 +41,12 @@ void Element::Element_GLOW()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_GLOW::update;
+	Graphics = &Element_GLOW::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_GLOW static int update(UPDATE_FUNC_ARGS)
+int Element_GLOW::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry;
 	for (rx=-1; rx<2; rx++)
@@ -72,7 +70,10 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+//#TPT-Directive ElementHeader Element_GLOW static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_GLOW::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	*firer = restrict_flt(cpart->temp-(275.13f+32.0f), 0, 128)/50.0f;
 	*fireg = restrict_flt(cpart->ctype, 0, 128)/50.0f;
@@ -85,3 +86,6 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	*pixel_mode |= FIRE_ADD;
 	return 0;
 }
+
+
+Element_GLOW::~Element_GLOW() {}

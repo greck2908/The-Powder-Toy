@@ -1,10 +1,8 @@
 #ifndef TPTSCRIPTINTERFACE_H_
 #define TPTSCRIPTINTERFACE_H_
-#include "Config.h"
 
 #include "CommandInterface.h"
 #include "TPTSTypes.h"
-#include <deque>
 
 class TPTScriptInterface: public CommandInterface {
 protected:
@@ -20,8 +18,9 @@ protected:
 	ValueType testType(String word);
 public:
 	TPTScriptInterface(GameController * c, GameModel * m);
-	int Command(String command) override;
-	String FormatCommand(String command) override;
+	virtual void Tick() {}
+	virtual int Command(String command);
+	virtual String FormatCommand(String command);
 	virtual ~TPTScriptInterface();
 };
 

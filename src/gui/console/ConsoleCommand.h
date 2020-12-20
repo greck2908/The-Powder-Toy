@@ -1,8 +1,6 @@
 #ifndef CONSOLECOMMAND_H_
 #define CONSOLECOMMAND_H_
 
-#include "common/String.h"
-
 class ConsoleCommand
 {
 public:

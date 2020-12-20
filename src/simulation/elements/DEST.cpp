@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_DEST()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_DEST PT_DEST 89
+Element_DEST::Element_DEST()
 {
 	Identifier = "DEFAULT_PT_DEST";
 	Name = "DEST";
@@ -29,6 +26,7 @@ void Element::Element_DEST()
 
 	Weight = 101;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 150;
 	Description = "More destructive Bomb, can break through virtually anything.";
 
@@ -43,11 +41,12 @@ void Element::Element_DEST()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_DEST::update;
+	Graphics = &Element_DEST::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_DEST static int update(UPDATE_FUNC_ARGS)
+int Element_DEST::update(UPDATE_FUNC_ARGS)
 {
 	int rx = RNG::Ref().between(-2, 2);
 	int ry = RNG::Ref().between(-2, 2);
@@ -60,7 +59,7 @@ static int update(UPDATE_FUNC_ARGS)
 
 	if (parts[i].life<=0 || parts[i].life>37)
 	{
-		parts[i].life = RNG::Ref().between(30, 49);
+		parts[i].life = RNG::Ref().between(30, 59);
 		sim->pv[y/CELL][x/CELL]+=60.0f;
 	}
 	if (rt == PT_PLUT || rt == PT_DEUT)
@@ -92,7 +91,10 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+//#TPT-Directive ElementHeader Element_DEST static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_DEST::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	if(cpart->life)
 	{
@@ -104,3 +106,6 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	}
 	return 0;
 }
+
+
+Element_DEST::~Element_DEST() {}

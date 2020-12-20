@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-int Element_VIRS_update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_VRSS()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_VRSS PT_VRSS 175
+Element_VRSS::Element_VRSS()
 {
 	Identifier = "DEFAULT_PT_VRSS";
 	Name = "VRSS";
@@ -29,7 +26,7 @@ void Element::Element_VRSS()
 
 	Weight = 100;
 
-	DefaultProperties.temp = R_TEMP + 273.15f;
+	Temperature = R_TEMP+ 273.15f;
 	HeatConduct = 251;
 	Description = "Solid Virus. Turns everything it touches into virus.";
 
@@ -44,14 +41,15 @@ void Element::Element_VRSS()
 	HighTemperature = 305.0f;
 	HighTemperatureTransition = PT_VIRS;
 
-	DefaultProperties.pavg[1] = 250;
-
-	Update = &Element_VIRS_update;
-	Graphics = &graphics;
+	Update = &Element_VIRS::update;
+	Graphics = &Element_VRSS::graphics;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_VRSS static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_VRSS::graphics(GRAPHICS_FUNC_ARGS)
 {
 	*pixel_mode |= NO_DECO;
 	return 1;
 }
+
+Element_VRSS::~Element_VRSS() {}

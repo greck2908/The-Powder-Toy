@@ -1,14 +1,21 @@
 #include "Graphics.h"
 
-#include <cstdlib>
-#include <cstring>
-
 #ifndef OGLI
 
 Graphics::Graphics():
 sdl_scale(1)
 {
 	vid = (pixel *)malloc(PIXELSIZE * (WINDOWW * WINDOWH));
+
+}
+
+void Graphics::Acquire()
+{
+
+}
+
+void Graphics::Release()
+{
 
 }
 

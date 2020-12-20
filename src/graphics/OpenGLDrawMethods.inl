@@ -1,6 +1,5 @@
 #include "../data/font.h"
 #include <cmath>
-#include <cstring>
 
 int PIXELMETHODS_CLASS::drawtext_outline(int x, int y, String s, int r, int g, int b, int a)
 {
@@ -16,15 +15,15 @@ int PIXELMETHODS_CLASS::drawtext_outline(int x, int y, String s, int r, int g, i
 int PIXELMETHODS_CLASS::drawtext(int x, int y, String str, int r, int g, int b, int a)
 {
 	bool invert = false;
-	if(str.size() == 0)
+	if(!strlen(s))
 		return 0;
 	int oR = r, oG = g, oB = b;
 	int width, height;
-	Graphics::textsize(str, width, height);
+	Graphics::textsize(s, width, height);
 	VideoBuffer texture(width, height);
 	int characterX = 0, characterY = 0;
 	int startX = characterX;
-	const String::value_type *s = str.c_str();
+	String::value_type *s = str.c_str();
 	for (; *s; s++)
 	{
 		if (*s == '\n')
@@ -132,9 +131,9 @@ int PIXELMETHODS_CLASS::drawtext(int x, int y, String str, int r, int g, int b, 
 
 int PIXELMETHODS_CLASS::drawchar(int x, int y, String::value_type c, int r, int g, int b, int a)
 {
-	const unsigned char *rp = font_data + font_ptrs[c];
+	unsigned char *rp = font_data + font_ptrs[c];
 	int w = *(rp++);
-	VideoBuffer texture(w, FONT_H);
+	VideoBuffer texture(w, 12);
 	texture.SetCharacter(0, 0, c, r, g, b, a);
 
 	glEnable(GL_TEXTURE_2D);
@@ -161,9 +160,9 @@ int PIXELMETHODS_CLASS::drawchar(int x, int y, String::value_type c, int r, int 
 
 int PIXELMETHODS_CLASS::addchar(int x, int y, String::value_type c, int r, int g, int b, int a)
 {
-	const unsigned char *rp = font_data + font_ptrs[c];
+	unsigned char *rp = font_data + font_ptrs[c];
 	int w = *(rp++);
-	VideoBuffer texture(w, FONT_H);
+	VideoBuffer texture(w, 12);
 	texture.AddCharacter(0, 0, c, r, g, b, a);
 
 	glEnable(GL_TEXTURE_2D);

@@ -1,14 +1,15 @@
 #ifndef RENDERMODEL_H_
 #define RENDERMODEL_H_
-#include "Config.h"
 
 #include <vector>
+#include "RenderView.h"
+#include "graphics/Renderer.h"
+
+using namespace std;
 
 class RenderView;
-class Renderer;
-class RenderModel
-{
-	std::vector<RenderView*> observers;
+class RenderModel {
+	vector<RenderView*> observers;
 	Renderer * renderer;
 	void notifyRendererChanged();
 	void notifyRenderChanged();

@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-
-void Element::Element_IRON()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_IRON PT_IRON 76
+Element_IRON::Element_IRON()
 {
 	Identifier = "DEFAULT_PT_IRON";
 	Name = "IRON";
@@ -28,6 +26,7 @@ void Element::Element_IRON()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f +273.15f;
 	HeatConduct = 251;
 	Description = "Rusts with salt, can be used for electrolysis of WATR.";
 
@@ -42,10 +41,11 @@ void Element::Element_IRON()
 	HighTemperature = 1687.0f;
 	HighTemperatureTransition = PT_LAVA;
 
-	Update = &update;
+	Update = &Element_IRON::update;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_IRON static int update(UPDATE_FUNC_ARGS)
+int Element_IRON::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry;
 	if (parts[i].life)
@@ -85,3 +85,6 @@ succ:
 	parts[i].tmp = RNG::Ref().between(20, 29);
 	return 0;
 }
+
+
+Element_IRON::~Element_IRON() {}

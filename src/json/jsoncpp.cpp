@@ -2060,9 +2060,9 @@ public:
   : collectComments_(collectComments)
   , reader_(features)
   {}
-  bool parse(
+  virtual bool parse(
       char const* beginDoc, char const* endDoc,
-      Value* root, std::string* errs) override {
+      Value* root, std::string* errs) {
     bool ok = reader_.parse(beginDoc, endDoc, *root, collectComments_);
     if (errs) {
       *errs = reader_.getFormattedErrorMessages();
@@ -2534,7 +2534,7 @@ class JSON_API Exception : public std::exception {
 public:
   Exception(std::string const& msg);
   virtual ~Exception() throw();
-  char const* what() const throw() override;
+  virtual char const* what() const throw();
 protected:
   std::string const msg_;
 };
@@ -4750,7 +4750,7 @@ struct BuiltStyledStreamWriter : public StreamWriter
       std::string const& colonSymbol,
       std::string const& nullSymbol,
       std::string const& endingLineFeedSymbol);
-  int write(Value const& root, std::ostream* sout) override;
+  virtual int write(Value const& root, std::ostream* sout);
 private:
   void writeValue(Value const& value);
   void writeArrayValue(Value const& value);

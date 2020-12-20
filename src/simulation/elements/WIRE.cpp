@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_WIRE()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_WIRE PT_WIRE 156
+Element_WIRE::Element_WIRE()
 {
 	Identifier = "DEFAULT_PT_WIRE";
 	Name = "WWLD";
@@ -29,6 +26,7 @@ void Element::Element_WIRE()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f +273.15f;
 	HeatConduct = 250;
 	Description = "WireWorld wires, conducts based on a set of GOL-like rules.";
 
@@ -43,11 +41,12 @@ void Element::Element_WIRE()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_WIRE::update;
+	Graphics = &Element_WIRE::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_WIRE static int update(UPDATE_FUNC_ARGS)
+int Element_WIRE::update(UPDATE_FUNC_ARGS)
 {
 	int r,rx,ry,count=0;
 	/*
@@ -91,7 +90,11 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+
+//#TPT-Directive ElementHeader Element_WIRE static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_WIRE::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	if (cpart->ctype==0)
 	{
@@ -118,3 +121,6 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	}
 	return 0;
 }
+
+
+Element_WIRE::~Element_WIRE() {}

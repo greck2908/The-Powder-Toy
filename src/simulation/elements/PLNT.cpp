@@ -1,10 +1,8 @@
 #include "common/tpt-minmax.h"
-#include "simulation/ElementCommon.h"
+#include "simulation/Elements.h"
 
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_PLNT()
+//#TPT-Directive ElementClass Element_PLNT PT_PLNT 20
+Element_PLNT::Element_PLNT()
 {
 	Identifier = "DEFAULT_PT_PLNT";
 	Name = "PLNT";
@@ -31,6 +29,7 @@ void Element::Element_PLNT()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 65;
 	Description = "Plant, drinks water and grows.";
 
@@ -45,11 +44,12 @@ void Element::Element_PLNT()
 	HighTemperature = 573.0f;
 	HighTemperatureTransition = PT_FIRE;
 
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_PLNT::update;
+	Graphics = &Element_PLNT::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_PLNT static int update(UPDATE_FUNC_ARGS)
+int Element_PLNT::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry, np, rndstore;
 	for (rx=-1; rx<2; rx++)
@@ -121,7 +121,8 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_PLNT static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_PLNT::graphics(GRAPHICS_FUNC_ARGS)
 {
 	float maxtemp = std::max((float)cpart->tmp2, cpart->temp);
 	if (maxtemp > 300)
@@ -137,3 +138,6 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	}
 	return 0;
 }
+
+
+Element_PLNT::~Element_PLNT() {}

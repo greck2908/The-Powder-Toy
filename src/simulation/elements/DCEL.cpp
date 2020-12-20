@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_DCEL()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_DCEL PT_DCEL 138
+Element_DCEL::Element_DCEL()
 {
 	Identifier = "DEFAULT_PT_DCEL";
 	Name = "DCEL";
@@ -29,6 +26,7 @@ void Element::Element_DCEL()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 251;
 	Description = "Decelerator, slows down nearby elements.";
 
@@ -43,11 +41,12 @@ void Element::Element_DCEL()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_DCEL::update;
+	Graphics = &Element_DCEL::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_DCEL static int update(UPDATE_FUNC_ARGS)
+int Element_DCEL::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry;
 	float multiplier = 1.0f/1.1f;
@@ -75,9 +74,16 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+
+//#TPT-Directive ElementHeader Element_DCEL static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_DCEL::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	if(cpart->tmp)
 		*pixel_mode |= PMODE_GLOW;
 	return 0;
 }
+
+
+Element_DCEL::~Element_DCEL() {}

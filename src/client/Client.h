@@ -1,16 +1,22 @@
 #ifndef CLIENT_H
 #define CLIENT_H
-#include "Config.h"
 
+#include <queue>
 #include <vector>
 #include <list>
 
 #include "common/String.h"
+#include "Config.h"
 #include "common/Singleton.h"
-#include "json/json.h"
 
 #include "User.h"
+#include "UserInfo.h"
 
+#include "json/json.h"
+
+#include "requestbroker/RequestBroker.h"
+
+class Thumbnail;
 class SaveInfo;
 class SaveFile;
 class SaveComment;
@@ -43,17 +49,13 @@ public:
 
 class RequestListener;
 class ClientListener;
-namespace http
-{
-	class Request;
-}
 class Client: public Singleton<Client> {
 private:
 	String messageOfTheDay;
 	std::vector<std::pair<String, ByteString> > serverNotifications;
 
-	http::Request *versionCheckRequest;
-	http::Request *alternateVersionCheckRequest;
+	void * versionCheckRequest;
+	void * alternateVersionCheckRequest;
 	bool usingAltUpdateServer;
 	bool updateAvailable;
 	UpdateInfo updateInfo;
@@ -68,6 +70,13 @@ private:
 	//Auth session
 	User authUser;
 
+	//Thumbnail retreival
+	int thumbnailCacheNextID;
+	Thumbnail * thumbnailCache[THUMB_CACHE_SIZE];
+	void * activeThumbRequests[IMGCONNS];
+	int activeThumbRequestTimes[IMGCONNS];
+	int activeThumbRequestCompleteTimes[IMGCONNS];
+	ByteString activeThumbRequestIDs[IMGCONNS];
 	void notifyUpdateAvailable();
 	void notifyAuthUserChanged();
 	void notifyMessageOfTheDay();
@@ -115,7 +124,8 @@ public:
 	void SetMessageOfTheDay(String message);
 	String GetMessageOfTheDay();
 
-	void Initialise(ByteString proxyString, bool disableNetwork);
+	void Initialise(ByteString proxyString);
+	void SetProxy(ByteString proxy);
 	bool IsFirstRun();
 
 	int MakeDirectory(const char * dirname);
@@ -141,14 +151,23 @@ public:
 
 	RequestStatus AddComment(int saveID, String comment);
 
+	//Retrieves a "UserInfo" object
+	RequestBroker::Request * GetUserInfoAsync(ByteString username);
+	RequestBroker::Request * SaveUserInfoAsync(UserInfo info);
+
+	RequestBroker::Request * GetSaveDataAsync(int saveID, int saveDate);
+	unsigned char * GetSaveData(int saveID, int saveDate, int & dataLength);
 	std::vector<unsigned char> GetSaveData(int saveID, int saveDate);
 
 	LoginStatus Login(ByteString username, ByteString password, User & user);
+	void ClearThumbnailRequests();
 	std::vector<SaveInfo*> * SearchSaves(int start, int count, String query, ByteString sort, ByteString category, int & resultCount);
 	std::vector<std::pair<ByteString, int> > * GetTags(int start, int count, String query, int & resultCount);
 
+	RequestBroker::Request * GetCommentsAsync(int saveID, int start, int count);
+
 	SaveInfo * GetSave(int saveID, int saveDate);
-	SaveFile * LoadSaveFile(ByteString filename);
+	RequestBroker::Request * GetSaveAsync(int saveID, int saveDate);
 
 	RequestStatus DeleteSave(int saveID);
 	RequestStatus ReportSave(int saveID, String message);
@@ -162,9 +181,9 @@ public:
 	String GetLastError() {
 		return lastError;
 	}
-	RequestStatus ParseServerReturn(ByteString &result, int status, bool json);
+	RequestStatus ParseServerReturn(char *result, int status, bool json);
 	void Tick();
-	bool CheckUpdate(http::Request *updateRequest, bool checkSession);
+	bool CheckUpdate(void *updateRequest, bool checkSession);
 	void Shutdown();
 
 	// preferences functions

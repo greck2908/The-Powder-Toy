@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-
-void Element::Element_PSNS()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_PSNS PT_PSNS 172
+Element_PSNS::Element_PSNS()
 {
 	Identifier = "DEFAULT_PT_PSNS";
 	Name = "PSNS";
@@ -28,7 +26,7 @@ void Element::Element_PSNS()
 
 	Weight = 100;
 
-	DefaultProperties.temp = 4.0f + 273.15f;
+	Temperature = 277.15f;
 	HeatConduct = 0;
 	Description = "Pressure sensor, creates a spark when the pressure is greater than its temperature.";
 
@@ -43,10 +41,11 @@ void Element::Element_PSNS()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
+	Update = &Element_PSNS::update;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_PSNS static int update(UPDATE_FUNC_ARGS)
+int Element_PSNS::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry, rt;
 	if ((parts[i].tmp == 0 && sim->pv[y/CELL][x/CELL] > parts[i].temp-273.15f) || (parts[i].tmp == 2 && sim->pv[y/CELL][x/CELL] < parts[i].temp-273.15f))
@@ -102,3 +101,7 @@ static int update(UPDATE_FUNC_ARGS)
 	}
 	return 0;
 }
+
+
+
+Element_PSNS::~Element_PSNS() {}

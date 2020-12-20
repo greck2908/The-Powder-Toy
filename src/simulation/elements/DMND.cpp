@@ -1,6 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-void Element::Element_DMND()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_DMND PT_DMND 28
+Element_DMND::Element_DMND()
 {
 	Identifier = "DEFAULT_PT_DMND";
 	Name = "DMND";
@@ -26,6 +26,7 @@ void Element::Element_DMND()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 186;
 	Description = "Diamond. Indestructible.";
 
@@ -39,4 +40,8 @@ void Element::Element_DMND()
 	LowTemperatureTransition = NT;
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
+
+	Update = NULL;
 }
+
+Element_DMND::~Element_DMND() {}

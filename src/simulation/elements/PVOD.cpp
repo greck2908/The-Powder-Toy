@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_PVOD()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_PVOD PT_PVOD 84
+Element_PVOD::Element_PVOD()
 {
 	Identifier = "DEFAULT_PT_PVOD";
 	Name = "PVOD";
@@ -29,6 +26,7 @@ void Element::Element_PVOD()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 251;
 	Description = "Powered VOID. When activated, destroys entering particles.";
 
@@ -43,11 +41,12 @@ void Element::Element_PVOD()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_PVOD::update;
+	Graphics = &Element_PVOD::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_PVOD static int update(UPDATE_FUNC_ARGS)
+int Element_PVOD::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry;
 	if (parts[i].life>0 && parts[i].life!=10)
@@ -80,9 +79,15 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+//#TPT-Directive ElementHeader Element_PVOD static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_PVOD::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	int lifemod = ((cpart->life>10?10:cpart->life)*16);
 	*colr += lifemod;
 	return 0;
 }
+
+
+Element_PVOD::~Element_PVOD() {}

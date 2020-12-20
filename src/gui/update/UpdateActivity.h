@@ -1,10 +1,9 @@
 #ifndef UPDATEACTIVITY_H_
 #define UPDATEACTIVITY_H_
 
-class Task;
-class TaskWindow;
-class UpdateActivity
-{
+#include "tasks/TaskWindow.h"
+
+class UpdateActivity {
 	Task * updateDownloadTask;
 	TaskWindow * updateWindow;
 public:

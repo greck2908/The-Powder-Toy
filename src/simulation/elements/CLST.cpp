@@ -1,10 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-static void create(ELEMENT_CREATE_FUNC_ARGS);
-
-void Element::Element_CLST()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_CLST PT_CLST 155
+Element_CLST::Element_CLST()
 {
 	Identifier = "DEFAULT_PT_CLST";
 	Name = "CLST";
@@ -30,6 +26,7 @@ void Element::Element_CLST()
 
 	Weight = 55;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 70;
 	Description = "Clay dust. Produces paste when mixed with water.";
 
@@ -44,12 +41,12 @@ void Element::Element_CLST()
 	HighTemperature = 1256.0f;
 	HighTemperatureTransition = PT_LAVA;
 
-	Update = &update;
-	Graphics = &graphics;
-	Create = &create;
+	Update = &Element_CLST::update;
+	Graphics = &Element_CLST::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_CLST static int update(UPDATE_FUNC_ARGS)
+int Element_CLST::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry;
 	float cxy = 0;
@@ -90,7 +87,10 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+//#TPT-Directive ElementHeader Element_CLST static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_CLST::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	int z = (cpart->tmp - 5) * 16;//speckles!
 	*colr += z;
@@ -99,7 +99,5 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	return 0;
 }
 
-static void create(ELEMENT_CREATE_FUNC_ARGS)
-{
-	sim->parts[i].tmp = RNG::Ref().between(0, 6);
-}
+
+Element_CLST::~Element_CLST() {}

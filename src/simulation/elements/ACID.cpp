@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_ACID()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_ACID PT_ACID 21
+Element_ACID::Element_ACID()
 {
 	Identifier = "DEFAULT_PT_ACID";
 	Name = "ACID";
@@ -30,6 +27,7 @@ void Element::Element_ACID()
 
 	Weight = 10;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 34;
 	Description = "Dissolves almost everything.";
 
@@ -44,13 +42,12 @@ void Element::Element_ACID()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	DefaultProperties.life = 75;
-
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_ACID::update;
+	Graphics = &Element_ACID::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_ACID static int update(UPDATE_FUNC_ARGS)
+int Element_ACID::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry, trade;
 	for (rx=-2; rx<3; rx++)
@@ -127,7 +124,9 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+//#TPT-Directive ElementHeader Element_ACID static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_ACID::graphics(GRAPHICS_FUNC_ARGS)
 {
 	int s = cpart->life;
 	if (s>75) s = 75; //These two should not be here.
@@ -140,3 +139,5 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	*pixel_mode |= PMODE_BLUR;
 	return 0;
 }
+
+Element_ACID::~Element_ACID() {}

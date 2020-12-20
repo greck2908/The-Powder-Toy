@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-
-void Element::Element_BTRY()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_BTRY PT_BTRY 53
+Element_BTRY::Element_BTRY()
 {
 	Identifier = "DEFAULT_PT_BTRY";
 	Name = "BTRY";
@@ -28,6 +26,7 @@ void Element::Element_BTRY()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 251;
 	Description = "Battery. Generates infinite electricity.";
 
@@ -42,10 +41,11 @@ void Element::Element_BTRY()
 	HighTemperature = 2273.0f;
 	HighTemperatureTransition = PT_PLSM;
 
-	Update = &update;
+	Update = &Element_BTRY::update;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_BTRY static int update(UPDATE_FUNC_ARGS)
+int Element_BTRY::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry, rt;
 	for (rx=-2; rx<3; rx++)
@@ -68,3 +68,6 @@ static int update(UPDATE_FUNC_ARGS)
 			}
 	return 0;
 }
+
+
+Element_BTRY::~Element_BTRY() {}

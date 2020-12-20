@@ -1,15 +1,17 @@
+#include <algorithm>
 #include "ProfileActivity.h"
-
 #include "gui/interface/Button.h"
 #include "gui/interface/Textbox.h"
 #include "gui/interface/Label.h"
 #include "gui/interface/AvatarButton.h"
 #include "gui/interface/ScrollPanel.h"
+#include "gui/interface/Keys.h"
 #include "gui/dialogues/ErrorMessage.h"
 #include "gui/Style.h"
-
 #include "client/Client.h"
-
+#include "client/UserInfo.h"
+#include "client/requestbroker/RequestListener.h"
+#include "Format.h"
 #include "Platform.h"
 
 ProfileActivity::ProfileActivity(ByteString username) :
@@ -21,40 +23,66 @@ ProfileActivity::ProfileActivity(ByteString username) :
 {
 	editable = Client::Ref().GetAuthUser().UserID && Client::Ref().GetAuthUser().Username == username;
 
+
+	class CloseAction: public ui::ButtonAction
+	{
+		ProfileActivity * a;
+	public:
+		CloseAction(ProfileActivity * a) : a(a) {  }
+		void ActionCallback(ui::Button * sender_)
+		{
+			a->Exit();
+		}
+	};
+
+	class SaveAction: public ui::ButtonAction
+	{
+		ProfileActivity * a;
+	public:
+		SaveAction(ProfileActivity * a) : a(a) {  }
+		void ActionCallback(ui::Button * sender_)
+		{
+			if (!a->loading && !a->saving && a->editable)
+			{
+				sender_->Enabled = false;
+				sender_->SetText("Saving...");
+				a->saving = true;
+				a->info.location = ((ui::Textbox*)a->location)->GetText();
+				a->info.biography = ((ui::Textbox*)a->bio)->GetText();
+				RequestBroker::Ref().Start(Client::Ref().SaveUserInfoAsync(a->info), a);
+			}
+		}
+	};
+
+
 	ui::Button * closeButton = new ui::Button(ui::Point(0, Size.Y-15), ui::Point(Size.X, 15), "Close");
-	closeButton->SetActionCallback({ [this] {
-		Exit();
-	} });
+	closeButton->SetActionCallback(new CloseAction(this));
 	if(editable)
 	{
 		closeButton->Size.X = (Size.X/2)+1;
 
 		ui::Button * saveButton = new ui::Button(ui::Point(Size.X/2, Size.Y-15), ui::Point(Size.X/2, 15), "Save");
-		saveButton->SetActionCallback({ [this, saveButton] {
-			if (!loading && !saving && editable)
-			{
-				saveButton->Enabled = false;
-				saveButton->SetText("Saving...");
-				saving = true;
-				info.location = location->GetText();
-				info.biography = bio->GetText();
-				SaveUserInfoRequestMonitor::RequestSetup(info);
-				SaveUserInfoRequestMonitor::RequestStart();
-			}
-		} });
+		saveButton->SetActionCallback(new SaveAction(this));
 		AddComponent(saveButton);
 	}
 
 	AddComponent(closeButton);
 
 	loading = true;
-
-	GetUserInfoRequestMonitor::RequestSetup(username);
-	GetUserInfoRequestMonitor::RequestStart();
+	RequestBroker::Ref().Start(Client::Ref().GetUserInfoAsync(username), this);
 }
 
 void ProfileActivity::setUserInfo(UserInfo newInfo)
 {
+	class EditAvatarAction: public ui::ButtonAction
+	{
+	public:
+		void ActionCallback(ui::Button * sender_)
+		{
+			Platform::OpenURI("http://" SERVER "/Profile/Avatar.html");
+		}
+	};
+
 	info = newInfo;
 
 	if (!info.biography.length() && !editable)
@@ -82,9 +110,7 @@ void ProfileActivity::setUserInfo(UserInfo newInfo)
 	if (editable)
 	{
 		ui::Button * editAvatar = new ui::Button(ui::Point(Size.X - (40 + 16 + 75), currentY), ui::Point(75, 15), "Edit Avatar");
-		editAvatar->SetActionCallback({ [] {
-			Platform::OpenURI(SCHEME SERVER "/Profile/Avatar.html");
-		} });
+		editAvatar->SetActionCallback(new EditAvatarAction());
 		scrollPanel->AddChild(editAvatar);
 	}
 	currentY += 23;
@@ -173,11 +199,22 @@ void ProfileActivity::setUserInfo(UserInfo newInfo)
 	scrollPanel->AddChild(bioTitle);
 	currentY += 17;
 
+	class BioChangedAction: public ui::TextboxAction
+	{
+	public:
+		ProfileActivity * profileActivity;
+		BioChangedAction(ProfileActivity * profileActivity_) { profileActivity = profileActivity_; }
+		virtual void TextChangedCallback(ui::Textbox * sender)
+		{
+			profileActivity->ResizeArea();
+		}
+	};
+
 	if (editable)
 	{
 		bio = new ui::Textbox(ui::Point(4, currentY), ui::Point(Size.X-12, -1), info.biography);
 		((ui::Textbox*)bio)->SetInputType(ui::Textbox::Multiline);
-		((ui::Textbox*)bio)->SetActionCallback({ [this] { ResizeArea(); } });
+		((ui::Textbox*)bio)->SetActionCallback(new BioChangedAction(this));
 		((ui::Textbox*)bio)->SetLimit(20000);
 	}
 	else
@@ -192,31 +229,27 @@ void ProfileActivity::setUserInfo(UserInfo newInfo)
 	scrollPanel->InnerSize = ui::Point(Size.X, currentY);
 }
 
-void ProfileActivity::OnResponse(bool SaveUserInfoStatus)
+void ProfileActivity::OnResponseReady(void * userDataPtr, int identifier)
 {
-	if (SaveUserInfoStatus)
+	if (loading)
+	{
+		loading = false;
+		setUserInfo(*(UserInfo*)userDataPtr);
+		delete (UserInfo*)userDataPtr;
+	}
+	else if (saving)
 	{
 		Exit();
 	}
-	else
-	{
-		doError = true;
-		doErrorMessage = "Could not save user info: " + Client::Ref().GetLastError();
-	}
 }
 
-void ProfileActivity::OnResponse(std::unique_ptr<UserInfo> getUserInfoResult)
+void ProfileActivity::OnResponseFailed(int identifier)
 {
-	if (getUserInfoResult)
-	{
-		loading = false;
-		setUserInfo(*getUserInfoResult);
-	}
-	else
-	{
-		doError = true;
+	doError = true;
+	if (loading)
 		doErrorMessage = "Could not load user info: " + Client::Ref().GetLastError();
-	}
+	else if (saving)
+		doErrorMessage = "Could not save user info: " + Client::Ref().GetLastError();
 }
 
 void ProfileActivity::OnTick(float dt)
@@ -226,9 +259,6 @@ void ProfileActivity::OnTick(float dt)
 		ErrorMessage::Blocking("Error", doErrorMessage);
 		Exit();
 	}
-
-	SaveUserInfoRequestMonitor::RequestPoll();
-	GetUserInfoRequestMonitor::RequestPoll();
 }
 
 void ProfileActivity::OnDraw()
@@ -254,5 +284,6 @@ void ProfileActivity::ResizeArea()
 
 ProfileActivity::~ProfileActivity()
 {
+	RequestBroker::Ref().DetachRequestListener(this);
 }
 

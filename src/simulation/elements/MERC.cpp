@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-
-void Element::Element_MERC()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_MERC PT_MERC 152
+Element_MERC::Element_MERC()
 {
 	Identifier = "DEFAULT_PT_MERC";
 	Name = "MERC";
@@ -28,6 +26,7 @@ void Element::Element_MERC()
 
 	Weight = 91;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 251;
 	Description = "Mercury. Volume changes with temperature, Conductive.";
 
@@ -42,12 +41,11 @@ void Element::Element_MERC()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	DefaultProperties.tmp = 10;
-
-	Update = &update;
+	Update = &Element_MERC::update;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_MERC static int update(UPDATE_FUNC_ARGS)
+int Element_MERC::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry, trade, np;
 	// Max number of particles that can be condensed into one
@@ -132,3 +130,6 @@ static int update(UPDATE_FUNC_ARGS)
 	}
 	return 0;
 }
+
+
+Element_MERC::~Element_MERC() {}

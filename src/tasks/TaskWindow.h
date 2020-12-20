@@ -1,13 +1,9 @@
 #ifndef TASKWINDOW_H_
 #define TASKWINDOW_H_
 
+#include "gui/interface/Label.h"
 #include "gui/interface/Window.h"
 #include "tasks/TaskListener.h"
-
-namespace ui
-{
-	class Label;
-}
 
 class Task;
 class TaskWindow: public ui::Window, public TaskListener {
@@ -21,13 +17,13 @@ class TaskWindow: public ui::Window, public TaskListener {
 	String progressStatus;
 public:
 	TaskWindow(String title_, Task * task_, bool closeOnDone = true);
-	void NotifyStatus(Task * task) override;
-	void NotifyDone(Task * task) override;
-	void NotifyProgress(Task * task) override;
-	void NotifyError(Task * task) override;
-	void OnTick(float dt) override;
-	void OnDraw() override;
-	void Exit();
+	virtual void NotifyStatus(Task * task);
+	virtual void NotifyDone(Task * task);
+	virtual void NotifyProgress(Task * task);
+	virtual void NotifyError(Task * task);
+	virtual void OnTick(float dt);
+	virtual void OnDraw();
+	virtual void Exit();
 	virtual ~TaskWindow();
 };
 

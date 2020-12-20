@@ -1,14 +1,11 @@
-#include "CommandInterface.h"
-
+#include <iostream>
 #include <cstring>
-#include <cstddef>
 #if !defined(WIN) || defined(__GNUC__)
 #include <strings.h>
 #endif
-
+#include "CommandInterface.h"
 #include "gui/game/GameModel.h"
-
-#include "simulation/Particle.h"
+#include "gui/game/GameController.h"
 
 CommandInterface::CommandInterface(GameController * c, GameModel * m) {
 	this->m = m;

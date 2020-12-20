@@ -1,13 +1,11 @@
 #include "OptionsController.h"
+#include "gui/dialogues/ErrorMessage.h"
+#include "gui/interface/Engine.h"
+#include "gui/game/GameModel.h"
 
-#include "OptionsView.h"
-#include "OptionsModel.h"
-
-#include "Controller.h"
-
-OptionsController::OptionsController(GameModel * gModel_, std::function<void ()> onDone_):
+OptionsController::OptionsController(GameModel * gModel_, ControllerCallback * callback_):
 	gModel(gModel_),
-	onDone(onDone_),
+	callback(callback_),
 	HasExited(false)
 {
 	view = new OptionsView();
@@ -62,11 +60,6 @@ void OptionsController::SetAltFullscreen(bool altFullscreen)
 	model->SetAltFullscreen(altFullscreen);
 }
 
-void OptionsController::SetForceIntegerScaling(bool forceIntegerScaling)
-{
-	model->SetForceIntegerScaling(forceIntegerScaling);
-}
-
 void OptionsController::SetShowAvatars(bool showAvatars)
 {
 	model->SetShowAvatars(showAvatars);
@@ -87,47 +80,17 @@ void OptionsController::SetFastQuit(bool fastquit)
 	model->SetFastQuit(fastquit);
 }
 
-void OptionsController::SetDecoSpace(int decoSpace)
-{
-	model->SetDecoSpace(decoSpace);
-}
-
 OptionsView * OptionsController::GetView()
 {
 	return view;
-}
-
-void OptionsController::SetMouseClickrequired(bool mouseClickRequired)
-{
-	model->SetMouseClickRequired(mouseClickRequired);
-}
-
-void OptionsController::SetIncludePressure(bool includePressure)
-{
-	model->SetIncludePressure(includePressure);
-}
-
-void OptionsController::SetPerfectCircle(bool perfectCircle)
-{
-	model->SetPerfectCircle(perfectCircle);
-}
-
-void OptionsController::SetMomentumScroll(bool momentumScroll)
-{
-	model->SetMomentumScroll(momentumScroll);
-}
-
-void OptionsController::SetAutoDrawLimit(bool autoDrawLimit)
-{
-	model->SetAutoDrawLimit(autoDrawLimit);
 }
 
 void OptionsController::Exit()
 {
 	view->CloseActiveWindow();
 
-	if (onDone)
-		onDone();
+	if (callback)
+		callback->ControllerExit();
 	HasExited = true;
 }
 
@@ -137,5 +100,6 @@ OptionsController::~OptionsController()
 	view->CloseActiveWindow();
 	delete model;
 	delete view;
+	delete callback;
 }
 

@@ -1,6 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-void Element::Element_CNCT()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_CNCT PT_CNCT 24
+Element_CNCT::Element_CNCT()
 {
 	Identifier = "DEFAULT_PT_CNCT";
 	Name = "CNCT";
@@ -26,6 +26,7 @@ void Element::Element_CNCT()
 
 	Weight = 55;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 100;
 	Description = "Concrete, stronger than stone.";
 
@@ -39,4 +40,8 @@ void Element::Element_CNCT()
 	LowTemperatureTransition = NT;
 	HighTemperature = 1123.0f;
 	HighTemperatureTransition = PT_LAVA;
+
+	Update = NULL;
 }
+
+Element_CNCT::~Element_CNCT() {}

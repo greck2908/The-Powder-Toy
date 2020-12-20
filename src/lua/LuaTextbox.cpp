@@ -1,10 +1,8 @@
-#include "Config.h"
 #ifdef LUACONSOLE
 
-#include "LuaTextbox.h"
-
+#include <iostream>
 #include "LuaScriptInterface.h"
-
+#include "LuaTextbox.h"
 #include "gui/interface/Textbox.h"
 
 const char LuaTextbox::className[] = "Textbox";
@@ -22,7 +20,7 @@ Luna<LuaTextbox>::RegType LuaTextbox::methods[] = {
 
 LuaTextbox::LuaTextbox(lua_State * l) :
 	LuaComponent(l),
-	onTextChangedFunction(l)
+	onTextChangedFunction(0)
 {
 	this->l = l;
 	int posX = luaL_optinteger(l, 1, 0);
@@ -34,7 +32,17 @@ LuaTextbox::LuaTextbox(lua_State * l) :
 
 	textbox = new ui::Textbox(ui::Point(posX, posY), ui::Point(sizeX, sizeY), text, placeholder);
 	textbox->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
-	textbox->SetActionCallback({ [this] { triggerOnTextChanged(); } });
+	class TextChangedAction : public ui::TextboxAction
+	{
+		LuaTextbox * t;
+	public:
+		TextChangedAction(LuaTextbox * t) : t(t) {}
+		void TextChangedCallback(ui::Textbox * sender)
+		{
+			t->triggerOnTextChanged();
+		}
+	};
+	textbox->SetActionCallback(new TextChangedAction(this));
 	component = textbox;
 }
 
@@ -56,7 +64,17 @@ int LuaTextbox::readonly(lua_State * l)
 
 int LuaTextbox::onTextChanged(lua_State * l)
 {
-	return onTextChangedFunction.CheckAndAssignArg1(l);
+	if(lua_type(l, 1) != LUA_TNIL)
+	{
+		luaL_checktype(l, 1, LUA_TFUNCTION);
+		lua_pushvalue(l, 1);
+		onTextChangedFunction = luaL_ref(l, LUA_REGISTRYINDEX);
+	}
+	else
+	{
+		onTextChangedFunction = 0;
+	}
+	return 0;
 }
 
 void LuaTextbox::triggerOnTextChanged()
@@ -64,7 +82,7 @@ void LuaTextbox::triggerOnTextChanged()
 	if(onTextChangedFunction)
 	{
 		lua_rawgeti(l, LUA_REGISTRYINDEX, onTextChangedFunction);
-		lua_rawgeti(l, LUA_REGISTRYINDEX, owner_ref);
+		lua_rawgeti(l, LUA_REGISTRYINDEX, UserData);
 		if (lua_pcall(l, 1, 0, 0))
 		{
 			ci->Log(CommandInterface::LogError, ByteString(lua_tostring(l, -1)).FromUtf8());

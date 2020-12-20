@@ -1,8 +1,9 @@
 #pragma once
 
 #include "common/String.h"
+
 #include "Component.h"
-#include "TextWrapper.h"
+#include "Colour.h"
 
 namespace ui
 {
@@ -17,19 +18,16 @@ namespace ui
 			String actionData;
 		};
 
-		TextWrapper displayTextWrapper;
-
 		RichLabel(Point position, Point size, String richText);
 
 		virtual ~RichLabel();
 
-		void SetText(String text);
-		String GetDisplayText();
-		String GetText();
+		virtual void SetText(String text);
+		virtual String GetDisplayText();
+		virtual String GetText();
 
-		void Draw(const Point& screenPos) override;
-		void OnMouseClick(int x, int y, unsigned button) override;
-
+		virtual void Draw(const Point& screenPos);
+		virtual void OnMouseClick(int x, int y, unsigned button);
 	protected:
 		String textSource;
 		String displayText;

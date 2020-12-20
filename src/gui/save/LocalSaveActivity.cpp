@@ -1,26 +1,43 @@
 #include "LocalSaveActivity.h"
-
-#include "images.h"
-
-#include "client/Client.h"
-#include "client/GameSave.h"
-#include "client/ThumbnailRendererTask.h"
-
-#include "graphics/Graphics.h"
-
-#include "gui/Style.h"
-
-#include "gui/dialogues/ConfirmPrompt.h"
-#include "gui/dialogues/ErrorMessage.h"
-#include "gui/interface/Button.h"
 #include "gui/interface/Label.h"
 #include "gui/interface/Textbox.h"
+#include "gui/interface/Button.h"
+#include "gui/search/Thumbnail.h"
+#include "client/requestbroker/RequestBroker.h"
+#include "gui/dialogues/ErrorMessage.h"
+#include "gui/dialogues/ConfirmPrompt.h"
+#include "client/Client.h"
+#include "client/GameSave.h"
+#include "gui/Style.h"
+#include "images.h"
 
-LocalSaveActivity::LocalSaveActivity(SaveFile save, OnSaved onSaved_) :
+class LocalSaveActivity::CancelAction: public ui::ButtonAction
+{
+	LocalSaveActivity * a;
+public:
+	CancelAction(LocalSaveActivity * a) : a(a) {}
+	virtual void ActionCallback(ui::Button * sender)
+	{
+		a->Exit();
+	}
+};
+
+class LocalSaveActivity::SaveAction: public ui::ButtonAction
+{
+	LocalSaveActivity * a;
+public:
+	SaveAction(LocalSaveActivity * a) : a(a) {}
+	virtual void ActionCallback(ui::Button * sender)
+	{
+		a->Save();
+	}
+};
+
+LocalSaveActivity::LocalSaveActivity(SaveFile save, FileSavedCallback * callback) :
 	WindowActivity(ui::Point(-1, -1), ui::Point(220, 200)),
 	save(save),
-	thumbnailRenderer(nullptr),
-	onSaved(onSaved_)
+	thumbnail(NULL),
+	callback(callback)
 {
 	ui::Label * titleLabel = new ui::Label(ui::Point(4, 5), ui::Point(Size.X-8, 16), "Save to computer:");
 	titleLabel->SetTextColour(style::Colour::InformationTitle);
@@ -38,9 +55,7 @@ LocalSaveActivity::LocalSaveActivity(SaveFile save, OnSaved onSaved_) :
 	cancelButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
 	cancelButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
 	cancelButton->Appearance.BorderInactive = ui::Colour(200, 200, 200);
-	cancelButton->SetActionCallback({ [this] {
-		Exit();
-	} });
+	cancelButton->SetActionCallback(new CancelAction(this));
 	AddComponent(cancelButton);
 	SetCancelButton(cancelButton);
 
@@ -48,48 +63,38 @@ LocalSaveActivity::LocalSaveActivity(SaveFile save, OnSaved onSaved_) :
 	okayButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
 	okayButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
 	okayButton->Appearance.TextInactive = style::Colour::InformationTitle;
-	okayButton->SetActionCallback({ [this] {
-		Save();
-	} });
+	okayButton->SetActionCallback(new SaveAction(this));
 	AddComponent(okayButton);
 	SetOkayButton(okayButton);
 
 	if(save.GetGameSave())
-	{
-		thumbnailRenderer = new ThumbnailRendererTask(save.GetGameSave(), Size.X-16, -1, false, true, false);
-		thumbnailRenderer->Start();
-	}
-}
-
-void LocalSaveActivity::OnTick(float dt)
-{
-	if (thumbnailRenderer)
-	{
-		thumbnailRenderer->Poll();
-		if (thumbnailRenderer->GetDone())
-		{
-			thumbnail = thumbnailRenderer->Finish();
-			thumbnailRenderer = nullptr;
-		}
-	}
+		RequestBroker::Ref().RenderThumbnail(save.GetGameSave(), true, false, Size.X-16, -1, this);
 }
 
 void LocalSaveActivity::Save()
 {
-	if (filenameField->GetText().Contains('/') || filenameField->GetText().BeginsWith("."))
-	{
-		new ErrorMessage("Error", "Invalid filename.");
-	}
-	else if (filenameField->GetText().length())
+	class FileOverwriteConfirmation: public ConfirmDialogueCallback {
+	public:
+		LocalSaveActivity * a;
+		ByteString filename;
+		FileOverwriteConfirmation(LocalSaveActivity * a, ByteString finalFilename) : a(a), filename(finalFilename) {}
+		virtual void ConfirmCallback(ConfirmPrompt::DialogueResult result) {
+			if (result == ConfirmPrompt::ResultOkay)
+			{
+				a->saveWrite(filename);
+			}
+		}
+		virtual ~FileOverwriteConfirmation() { }
+	};
+
+	if(filenameField->GetText().length())
 	{
 		ByteString finalFilename = ByteString(LOCAL_SAVE_DIR) + ByteString(PATH_SEP) + filenameField->GetText().ToUtf8() + ".cps";
 		save.SetDisplayName(filenameField->GetText());
 		save.SetFileName(finalFilename);
 		if(Client::Ref().FileExists(finalFilename))
 		{
-			new ConfirmPrompt("Overwrite file", "Are you sure you wish to overwrite\n"+finalFilename.FromUtf8(), { [this, finalFilename] {
-				saveWrite(finalFilename);
-			} });
+			new ConfirmPrompt("Overwrite file", "Are you sure you wish to overwrite\n"+finalFilename.FromUtf8(), new FileOverwriteConfirmation(this, finalFilename));
 		}
 		else
 		{
@@ -120,10 +125,7 @@ void LocalSaveActivity::saveWrite(ByteString finalFilename)
 		new ErrorMessage("Error", "Unable to write save file.");
 	else
 	{
-		if (onSaved)
-		{
-			onSaved(&save);
-		}
+		callback->FileSaved(&save);
 		Exit();
 	}
 }
@@ -137,15 +139,20 @@ void LocalSaveActivity::OnDraw()
 
 	if(thumbnail)
 	{
-		g->draw_image(thumbnail.get(), Position.X+(Size.X-thumbnail->Width)/2, Position.Y+45, 255);
+		g->draw_image(thumbnail, Position.X+(Size.X-thumbnail->Width)/2, Position.Y+45, 255);
 		g->drawrect(Position.X+(Size.X-thumbnail->Width)/2, Position.Y+45, thumbnail->Width, thumbnail->Height, 180, 180, 180, 255);
 	}
 }
 
+void LocalSaveActivity::OnResponseReady(void * imagePtr, int identifier)
+{
+	delete thumbnail;
+	thumbnail = (VideoBuffer*)imagePtr;
+}
+
 LocalSaveActivity::~LocalSaveActivity()
 {
-	if (thumbnailRenderer)
-	{
-		thumbnailRenderer->Abandon();
-	}
+	RequestBroker::Ref().DetachRequestListener(this);
+	delete thumbnail;
+	delete callback;
 }

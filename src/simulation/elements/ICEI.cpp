@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-
-void Element::Element_ICEI()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_ICEI PT_ICEI 13
+Element_ICEI::Element_ICEI()
 {
 	Identifier = "DEFAULT_PT_ICEI";
 	Name = "ICE";
@@ -28,7 +26,7 @@ void Element::Element_ICEI()
 
 	Weight = 100;
 
-	DefaultProperties.temp = R_TEMP - 50.0f + 273.15f;
+	Temperature = R_TEMP-50.0f+273.15f;
 	HeatConduct = 46;
 	Description = "Crushes under pressure. Cools down air.";
 
@@ -43,13 +41,12 @@ void Element::Element_ICEI()
 	HighTemperature = 252.05f;
 	HighTemperatureTransition = ST;
 
-	DefaultProperties.ctype = PT_WATR;
-
-	Update = &update;
+	Update = &Element_ICEI::update;
 }
 
-static int update(UPDATE_FUNC_ARGS)
-{
+//#TPT-Directive ElementHeader Element_ICEI static int update(UPDATE_FUNC_ARGS)
+int Element_ICEI::update(UPDATE_FUNC_ARGS)
+ { //currently used for snow as well
 	int r, rx, ry;
 	if (parts[i].ctype==PT_FRZW)//get colder if it is from FRZW
 	{
@@ -79,3 +76,6 @@ static int update(UPDATE_FUNC_ARGS)
 			}
 	return 0;
 }
+
+
+Element_ICEI::~Element_ICEI() {}

@@ -1,15 +1,12 @@
+#include "client/Client.h"
 #include "TagsView.h"
 
+#include "graphics/Graphics.h"
+#include "gui/dialogues/ErrorMessage.h"
 #include "TagsController.h"
 #include "TagsModel.h"
 #include "TagsModelException.h"
 
-#include "client/Client.h"
-#include "client/SaveInfo.h"
-
-#include "graphics/Graphics.h"
-
-#include "gui/dialogues/ErrorMessage.h"
 #include "gui/interface/Button.h"
 #include "gui/interface/Textbox.h"
 #include "gui/interface/Label.h"
@@ -18,12 +15,24 @@
 TagsView::TagsView():
 	ui::Window(ui::Point(-1, -1), ui::Point(195, 250))
 {
+
+	class CloseAction : public ui::ButtonAction
+	{
+		TagsView * v;
+	public:
+		CloseAction(TagsView * _v) { v = _v; }
+		void ActionCallback(ui::Button * sender)
+		{
+			v->c->Exit();
+		}
+	};
 	closeButton = new ui::Button(ui::Point(0, Size.Y-16), ui::Point(195, 16), "Close");
 	closeButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
 	closeButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
-	closeButton->SetActionCallback({ [this] { c->Exit(); } });
+	closeButton->SetActionCallback(new CloseAction(this));
 	AddComponent(closeButton);
 	SetCancelButton(closeButton);
+
 
 	tagInput = new ui::Textbox(ui::Point(8, Size.Y-40), ui::Point(Size.X-60, 16), "", "[new tag]");
 	tagInput->Appearance.icon = IconTag;
@@ -31,11 +40,21 @@ TagsView::TagsView():
 	tagInput->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
 	AddComponent(tagInput);
 
+	class AddTagAction : public ui::ButtonAction
+	{
+		TagsView * v;
+	public:
+		AddTagAction(TagsView * _v) { v = _v; }
+		void ActionCallback(ui::Button * sender)
+		{
+			v->addTag();
+		}
+	};
 	addButton = new ui::Button(ui::Point(tagInput->Position.X+tagInput->Size.X+4, tagInput->Position.Y), ui::Point(40, 16), "Add");
 	addButton->Appearance.icon = IconAdd;
 	addButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
 	addButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
-	addButton->SetActionCallback({ [this] { addTag(); } });
+	addButton->SetActionCallback(new AddTagAction(this));
 	AddComponent(addButton);
 
 	if (!Client::Ref().GetAuthUser().UserID)
@@ -63,14 +82,34 @@ void TagsView::NotifyTagsChanged(TagsModel * sender)
 		delete tags[i];
 	}
 	tags.clear();
-	
+
+
+	class DeleteTagAction : public ui::ButtonAction
+	{
+		TagsView * v;
+		ByteString tag;
+	public:
+		DeleteTagAction(TagsView * _v, ByteString tag) { v = _v; this->tag = tag; }
+		void ActionCallback(ui::Button * sender)
+		{
+			try
+			{
+				v->c->RemoveTag(tag);
+			}
+			catch(TagsModelException & ex)
+			{
+				new ErrorMessage("Could not remove tag", ByteString(ex.what()).FromUtf8());
+			}
+		}
+	};
+
 	if(sender->GetSave())
 	{
 		std::list<ByteString> Tags = sender->GetSave()->GetTags();
 		int i = 0;
-		for (auto &tag : Tags)
+		for(std::list<ByteString>::const_iterator iter = Tags.begin(), end = Tags.end(); iter != end; iter++)
 		{
-			ui::Label * tempLabel = new ui::Label(ui::Point(35, 35+(16*i)), ui::Point(120, 16), tag.FromUtf8());
+			ui::Label * tempLabel = new ui::Label(ui::Point(35, 35+(16*i)), ui::Point(120, 16), (*iter).FromUtf8());
 			tempLabel->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;			tempLabel->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
 			tags.push_back(tempLabel);
 			AddComponent(tempLabel);
@@ -83,16 +122,7 @@ void TagsView::NotifyTagsChanged(TagsModel * sender)
 				tempButton->Appearance.Margin.Top += 2;
 				tempButton->Appearance.HorizontalAlign = ui::Appearance::AlignCentre;
 				tempButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
-				tempButton->SetActionCallback({ [this, tag] {
-					try
-					{
-						c->RemoveTag(tag);
-					}
-					catch(TagsModelException & ex)
-					{
-						new ErrorMessage("Could not remove tag", ByteString(ex.what()).FromUtf8());
-					}
-				} });
+				tempButton->SetActionCallback(new DeleteTagAction(this, *iter));
 				tags.push_back(tempButton);
 				AddComponent(tempButton);
 			}
@@ -134,3 +164,7 @@ void TagsView::addTag()
 	}
 	tagInput->SetText("");
 }
+
+TagsView::~TagsView() {
+}
+

@@ -1,6 +1,5 @@
 #ifndef MD5_H
 #define MD5_H
-#include "Config.h"
 
 struct md5_context
 {

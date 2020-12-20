@@ -1,20 +1,20 @@
 #ifndef RENDERCONTROLLER_H_
 #define RENDERCONTROLLER_H_
-#include "Config.h"
 
-#include <functional>
+#include "RenderView.h"
+#include "RenderModel.h"
+#include "graphics/Renderer.h"
+#include "Controller.h"
 
 class RenderView;
 class RenderModel;
-class Renderer;
-class RenderController
-{
+class RenderController {
 	RenderView * renderView;
 	RenderModel * renderModel;
-	std::function<void ()> onDone;
+	ControllerCallback * callback;
 public:
 	bool HasExited;
-	RenderController(Renderer * ren, std::function<void ()> onDone = nullptr);
+	RenderController(Renderer * ren, ControllerCallback * callback = NULL);
 	void Exit();
 	RenderView * GetView() { return renderView; }
 	virtual ~RenderController();

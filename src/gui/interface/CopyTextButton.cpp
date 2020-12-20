@@ -1,10 +1,7 @@
 #include "CopyTextButton.h"
-
 #include "Colour.h"
-#include "gui/Style.h"
-#include "Label.h"
-
 #include "PowderToy.h"
+#include "gui/Style.h"
 
 namespace ui
 {

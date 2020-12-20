@@ -1,21 +1,20 @@
 #pragma once
 
+#include <vector>
 #include "common/String.h"
 #include "Activity.h"
-#include "gui/interface/Colour.h"
+#include "gui/interface/Window.h"
+#include "gui/interface/Textbox.h"
 
-#include <functional>
-
-namespace ui
+class ColourPickedCallback
 {
-	class Textbox;
-	class Label;
-}
+public:
+	ColourPickedCallback() {}
+	virtual  ~ColourPickedCallback() {}
+	virtual void ColourPicked(ui::Colour colour) {}
+};
 
-class ColourPickerActivity : public WindowActivity
-{
-	using OnPicked = std::function<void (ui::Colour)>;
-
+class ColourPickerActivity: public WindowActivity {
 	int currentHue;
 	int currentSaturation;
 	int currentValue;
@@ -30,17 +29,16 @@ class ColourPickerActivity : public WindowActivity
 	ui::Textbox * aValue;
 	ui::Label * hexValue;
 
-	OnPicked onPicked;
+	ColourPickedCallback * callback;
 
 	void UpdateTextboxes(int r, int g, int b, int a);
 public:
-	ColourPickerActivity(ui::Colour initialColour, OnPicked onPicked = nullptr);
-	virtual ~ColourPickerActivity() = default;
-
-	void OnMouseMove(int x, int y, int dx, int dy) override;
-	void OnMouseDown(int x, int y, unsigned button) override;
-	void OnMouseUp(int x, int y, unsigned button) override;
-	void OnKeyPress(int key, int scan, bool repeat, bool shift, bool ctrl, bool alt) override;
-	void OnTryExit(ExitMethod method) override;
-	void OnDraw() override;
+	virtual void OnMouseMove(int x, int y, int dx, int dy);
+	virtual void OnMouseDown(int x, int y, unsigned button);
+	virtual void OnMouseUp(int x, int y, unsigned button);
+	virtual void OnKeyPress(int key, int scan, bool repeat, bool shift, bool ctrl, bool alt);
+	virtual void OnTryExit(ExitMethod method);
+	ColourPickerActivity(ui::Colour initialColour, ColourPickedCallback * callback = NULL);
+	virtual ~ColourPickerActivity();
+	virtual void OnDraw();
 };

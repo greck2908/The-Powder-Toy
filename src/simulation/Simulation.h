@@ -1,22 +1,19 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
-#include "Config.h"
-
 #include <cstring>
 #include <cstddef>
 #include <vector>
-#include <array>
 
+#include "Config.h"
+#include "Elements.h"
+#include "SimulationData.h"
+#include "Sign.h"
 #include "Particle.h"
 #include "Stickman.h"
 #include "WallType.h"
-#include "Sign.h"
-#include "ElementDefs.h"
-#include "BuiltinGOL.h"
+#include "GOLMenu.h"
 #include "MenuSection.h"
-#include "CoordStack.h"
-
-#include "Element.h"
+#include "elements/Element.h"
 
 #define CHANNELS ((int)(MAX_TEMP-73)/100+2)
 
@@ -41,11 +38,14 @@ public:
 	Air * air;
 
 	std::vector<sign> signs;
-	std::array<Element, PT_NUM> elements;
+	Element elements[PT_NUM];
 	//Element * elements;
-	std::vector<SimTool> tools;
+	std::vector<SimTool*> tools;
 	std::vector<unsigned int> platent;
 	std::vector<wall_type> wtypes;
+	std::vector<gol_menu> gmenu;
+	std::vector<int> goltype;
+	std::vector<std::array<int, 10> > grule;
 	std::vector<menu_section> msections;
 
 	int currentTick;
@@ -80,7 +80,8 @@ public:
 	//Gol sim
 	int CGOL;
 	int GSPEED;
-	unsigned int gol[YRES][XRES][5];
+	unsigned char gol[YRES][XRES];
+	unsigned short gol2[YRES][XRES][9];
 	//Air sim
 	float (*vx)[XRES/CELL];
 	float (*vy)[XRES/CELL];
@@ -112,12 +113,11 @@ public:
 	int pretty_powder;
 	int sandcolour;
 	int sandcolour_frame;
-	int deco_space;
 
-	int Load(GameSave * save, bool includePressure);
-	int Load(GameSave * save, bool includePressure, int x, int y);
-	GameSave * Save(bool includePressure);
-	GameSave * Save(bool includePressure, int x1, int y1, int x2, int y2);
+	int Load(GameSave * save, bool includePressure = true);
+	int Load(int x, int y, GameSave * save, bool includePressure = true);
+	GameSave * Save(bool includePressure = true);
+	GameSave * Save(int x1, int y1, int x2, int y2, bool includePressure = true);
 	void SaveSimOptions(GameSave * gameSave);
 	SimulationSample GetSample(int x, int y);
 
@@ -142,8 +142,8 @@ public:
 	void kill_part(int i);
 	bool FloodFillPmapCheck(int x, int y, int type);
 	int flood_prop(int x, int y, size_t propoffset, PropertyValue propvalue, StructProperty::PropertyType proptype);
-	bool flood_water(int x, int y, int i);
-	int FloodINST(int x, int y);
+	int flood_water(int x, int y, int i, int originaly, int check);
+	int FloodINST(int x, int y, int fullc, int cm);
 	void detach(int i);
 	bool part_change_type(int i, int x, int y, int t);
 	//int InCurrentBrush(int i, int j, int rx, int ry);
@@ -166,7 +166,6 @@ public:
 	void clear_area(int area_x, int area_y, int area_w, int area_h);
 
 	void SetEdgeMode(int newEdgeMode);
-	void SetDecoSpace(int newDecoSpace);
 
 	//Drawing Deco
 	void ApplyDecoration(int x, int y, int colR, int colG, int colB, int colA, int mode);
@@ -211,36 +210,20 @@ public:
 	Simulation();
 	~Simulation();
 
-	bool InBounds(int x, int y);
+	bool InBounds(int x, int y)
+	{
+		return (x>=0 && y>=0 && x<XRES && y<YRES);
+	}
 
 	// These don't really belong anywhere at the moment, so go here for loop edge mode
-	static int remainder_p(int x, int y);
-	static float remainder_p(float x, float y);
-
-	String ElementResolve(int type, int ctype);
-	String BasicParticleInfo(Particle const &sample_part);
-
-
-	struct CustomGOLData
+	static int remainder_p(int x, int y)
 	{
-		int rule, colour1, colour2;
-		String nameString, ruleString;
-
-		inline bool operator <(const CustomGOLData &other) const
-		{
-			return rule < other.rule;
-		}
-	};
-
-private:
-	std::vector<CustomGOLData> customGol;
-
-public:
-	const CustomGOLData *GetCustomGOLByRule(int rule) const;
-	void SetCustomGOL(std::vector<CustomGOLData> newCustomGol);
-
-private:
-	CoordStack& getCoordStackSingleton();
+		return (x % y) + (x>=0 ? 0 : y);
+	}
+	static float remainder_p(float x, float y)
+	{
+		return std::fmod(x, y) + (x>=0 ? 0 : y);
+	}
 };
 
 #endif /* SIMULATION_H */

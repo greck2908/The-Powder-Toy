@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_GEL()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_GEL PT_GEL 142
+Element_GEL::Element_GEL()
 {
 	Identifier = "DEFAULT_PT_GEL";
 	Name = "GEL";
@@ -29,7 +26,7 @@ void Element::Element_GEL()
 
 	Weight = 35;
 
-	DefaultProperties.temp = R_TEMP - 2.0f + 273.15f;
+	Temperature = R_TEMP-2.0f  +273.15f;
 	HeatConduct = 29;
 	Description = "Gel. A liquid with variable viscosity and heat conductivity.";
 
@@ -44,11 +41,12 @@ void Element::Element_GEL()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_GEL::update;
+	Graphics = &Element_GEL::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_GEL static int update(UPDATE_FUNC_ARGS)
+int Element_GEL::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry, rt;
 	bool gel;
@@ -153,7 +151,11 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+
+//#TPT-Directive ElementHeader Element_GEL static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_GEL::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	int q = cpart->tmp;
 	*colr = q*(32-255)/120+255;
@@ -162,3 +164,7 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	*pixel_mode |= PMODE_BLUR;
 	return 0;
 }
+
+
+
+Element_GEL::~Element_GEL() {}

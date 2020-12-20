@@ -1,9 +1,7 @@
 #include "TagsModel.h"
-
 #include "TagsView.h"
-#include "TagsModelException.h"
-
 #include "client/Client.h"
+#include "TagsModelException.h"
 #include "client/SaveInfo.h"
 
 TagsModel::TagsModel():

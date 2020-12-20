@@ -1,10 +1,6 @@
 #include "DebugLines.h"
-
 #include "gui/game/GameView.h"
-
 #include "gui/game/GameController.h"
-
-#include "graphics/Graphics.h"
 
 DebugLines::DebugLines(unsigned int id, GameView * view, GameController * controller):
 	DebugInfo(id),

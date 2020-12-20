@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_INVIS()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_INVIS PT_INVIS 115
+Element_INVIS::Element_INVIS()
 {
 	Identifier = "DEFAULT_PT_INVIS";
 	Name = "INVS";
@@ -29,6 +26,7 @@ void Element::Element_INVIS()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 164;
 	Description = "Invisible to particles while under pressure.";
 
@@ -43,11 +41,12 @@ void Element::Element_INVIS()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_INVIS::update;
+	Graphics = &Element_INVIS::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_INVIS static int update(UPDATE_FUNC_ARGS)
+int Element_INVIS::update(UPDATE_FUNC_ARGS)
 {
 	float pressureResistance = 0.0f;
 	if (parts[i].tmp > 0)
@@ -62,7 +61,8 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_INVIS static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_INVIS::graphics(GRAPHICS_FUNC_ARGS)
 {
 	//pv[ny/CELL][nx/CELL]>4.0f || pv[ny/CELL][nx/CELL]<-4.0f
 	if(cpart->tmp2)
@@ -75,3 +75,6 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	}
 	return 0;
 }
+
+
+Element_INVIS::~Element_INVIS() {}

@@ -1,8 +1,6 @@
 #ifndef CLIENTLISTENER_H_
 #define CLIENTLISTENER_H_
 
-#include "common/String.h"
-
 class Client;
 class ClientListener
 {

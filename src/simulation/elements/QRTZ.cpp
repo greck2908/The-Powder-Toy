@@ -1,10 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-int Element_QRTZ_update(UPDATE_FUNC_ARGS);
-int Element_QRTZ_graphics(GRAPHICS_FUNC_ARGS);
-static void create(ELEMENT_CREATE_FUNC_ARGS);
-
-void Element::Element_QRTZ()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_QRTZ PT_QRTZ 132
+Element_QRTZ::Element_QRTZ()
 {
 	Identifier = "DEFAULT_PT_QRTZ";
 	Name = "QRTZ";
@@ -30,6 +26,7 @@ void Element::Element_QRTZ()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+273.15f;
 	HeatConduct = 3;
 	Description = "Quartz, breakable mineral. Conducts but becomes brittle at lower temperatures.";
 
@@ -44,12 +41,12 @@ void Element::Element_QRTZ()
 	HighTemperature = 2573.15f;
 	HighTemperatureTransition = PT_LAVA;
 
-	Update = &Element_QRTZ_update;
-	Graphics = &Element_QRTZ_graphics;
-	Create = &create;
+	Update = &Element_QRTZ::update;
+	Graphics = &Element_QRTZ::graphics;
 }
 
-int Element_QRTZ_update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_QRTZ static int update(UPDATE_FUNC_ARGS)
+int Element_QRTZ::update(UPDATE_FUNC_ARGS)
 {
 	int r, tmp, trade, rx, ry, np, t = parts[i].type;
 	if (t == PT_QRTZ)
@@ -147,7 +144,9 @@ int Element_QRTZ_update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-int Element_QRTZ_graphics(GRAPHICS_FUNC_ARGS)
+
+//#TPT-Directive ElementHeader Element_QRTZ static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_QRTZ::graphics(GRAPHICS_FUNC_ARGS)
  //QRTZ and PQRT
 {
 	int z = (cpart->tmp2 - 5) * 16;//speckles!
@@ -157,8 +156,5 @@ int Element_QRTZ_graphics(GRAPHICS_FUNC_ARGS)
 	return 0;
 }
 
-static void create(ELEMENT_CREATE_FUNC_ARGS)
-{
-	sim->parts[i].tmp2 = RNG::Ref().between(0, 10);
-	sim->parts[i].pavg[1] = sim->pv[y/CELL][x/CELL];
-}
+
+Element_QRTZ::~Element_QRTZ() {}

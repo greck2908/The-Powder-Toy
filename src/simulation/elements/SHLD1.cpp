@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-
-void Element::Element_SHLD1()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_SHLD1 PT_SHLD1 119
+Element_SHLD1::Element_SHLD1()
 {
 	Identifier = "DEFAULT_PT_SHLD1";
 	Name = "SHLD";
@@ -28,6 +26,7 @@ void Element::Element_SHLD1()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 0;
 	Description = "Shield, spark it to grow.";
 
@@ -42,10 +41,11 @@ void Element::Element_SHLD1()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
+	Update = &Element_SHLD1::update;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_SHLD1 static int update(UPDATE_FUNC_ARGS)
+int Element_SHLD1::update(UPDATE_FUNC_ARGS)
 {
 	int r, nnx, nny, rx, ry;
 	for (rx=-1; rx<2; rx++)
@@ -80,3 +80,7 @@ static int update(UPDATE_FUNC_ARGS)
 			}
 	return 0;
 }
+
+
+
+Element_SHLD1::~Element_SHLD1() {}

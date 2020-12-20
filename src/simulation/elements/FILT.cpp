@@ -1,11 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int graphics(GRAPHICS_FUNC_ARGS);
-static void create(ELEMENT_CREATE_FUNC_ARGS);
-int Element_FILT_interactWavelengths(Particle* cpart, int origWl);
-int Element_FILT_getWavelengths(Particle* cpart);
-
-void Element::Element_FILT()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_FILT PT_FILT 125
+Element_FILT::Element_FILT()
 {
 	Identifier = "DEFAULT_PT_FILT";
 	Name = "FILT";
@@ -31,6 +26,7 @@ void Element::Element_FILT()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 251;
 	Description = "Filter for photons, changes the color.";
 
@@ -45,13 +41,14 @@ void Element::Element_FILT()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Graphics = &graphics;
-	Create = &create;
+	Update = NULL;
+	Graphics = &Element_FILT::graphics;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_FILT static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_FILT::graphics(GRAPHICS_FUNC_ARGS)
 {
-	int x, wl = Element_FILT_getWavelengths(cpart);
+	int x, wl = Element_FILT::getWavelengths(cpart);
 	*colg = 0;
 	*colb = 0;
 	*colr = 0;
@@ -74,17 +71,13 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	return 0;
 }
 
-static void create(ELEMENT_CREATE_FUNC_ARGS)
-{
-	sim->parts[i].tmp = v;
-}
-
+//#TPT-Directive ElementHeader Element_FILT static int interactWavelengths(Particle* cpart, int origWl)
 // Returns the wavelengths in a particle after FILT interacts with it (e.g. a photon)
 // cpart is the FILT particle, origWl the original wavelengths in the interacting particle
-int Element_FILT_interactWavelengths(Particle* cpart, int origWl)
+int Element_FILT::interactWavelengths(Particle* cpart, int origWl)
 {
 	const int mask = 0x3FFFFFFF;
-	int filtWl = Element_FILT_getWavelengths(cpart);
+	int filtWl = getWavelengths(cpart);
 	switch (cpart->tmp)
 	{
 		case 0:
@@ -135,7 +128,8 @@ int Element_FILT_interactWavelengths(Particle* cpart, int origWl)
 	}
 }
 
-int Element_FILT_getWavelengths(Particle* cpart)
+//#TPT-Directive ElementHeader Element_FILT static int getWavelengths(Particle* cpart)
+int Element_FILT::getWavelengths(Particle* cpart)
 {
 	if (cpart->ctype&0x3FFFFFFF)
 	{
@@ -149,3 +143,5 @@ int Element_FILT_getWavelengths(Particle* cpart)
 		return (0x1F << temp_bin);
 	}
 }
+
+Element_FILT::~Element_FILT() {}

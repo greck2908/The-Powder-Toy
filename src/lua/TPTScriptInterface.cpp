@@ -1,24 +1,14 @@
-#include "TPTScriptInterface.h"
-
+#include <stack>
+#include <iostream>
 #include <deque>
+#include <cstring>
 #ifdef MACOSX
 #include <strings.h>
 #endif
 #include <cstdlib>
-#include <cmath>
-
-#include "Config.h"
-
-#include "simulation/Simulation.h"
-#include "simulation/Air.h"
-#include "simulation/ElementClasses.h"
-
-#include "gui/game/GameController.h"
+#include "TPTScriptInterface.h"
 #include "gui/game/GameModel.h"
-
-#include "gui/interface/Engine.h"
-
-#include "common/tpt-compat.h"
+#include "simulation/Air.h"
 
 TPTScriptInterface::TPTScriptInterface(GameController * c, GameModel * m): CommandInterface(c, m)
 {
@@ -160,14 +150,7 @@ int TPTScriptInterface::parseNumber(String str)
 	}
 	else
 	{
-		try
-		{
-			return str.ToNumber<int>();
-		}
-		catch (std::exception & e)
-		{
-			throw GeneralException(ByteString(e.what()).FromUtf8());
-		}
+		return str.ToNumber<int>();
 	}
 	return currentNumber;
 }
@@ -224,7 +207,7 @@ String TPTScriptInterface::FormatCommand(String command)
 	String outputData;
 
 	//Split command into words, put them on the stack
-	for(String word : command.PartitionBy(' ', true))
+	for(String word : command.PartitionBy(' '))
 		words.push_back(word);
 	while(!words.empty())
 	{
@@ -320,7 +303,7 @@ AnyType TPTScriptInterface::tptS_set(std::deque<String> * words)
 		}
 		else
 			partIndex = ((NumberType)selector).Value();
-		if(partIndex<0 || partIndex>=NPART || sim->parts[partIndex].type==0)
+		if(partIndex<0 || partIndex>NPART || sim->parts[partIndex].type==0)
 			throw GeneralException("Invalid particle");
 
 		switch(propertyFormat)
@@ -575,7 +558,7 @@ AnyType TPTScriptInterface::tptS_reset(std::deque<String> * words)
 		{
 			if (sim->parts[i].type)
 			{
-				sim->parts[i].temp = sim->elements[sim->parts[i].type].DefaultProperties.temp;
+				sim->parts[i].temp = sim->elements[sim->parts[i].type].Temperature;
 			}
 		}
 	}

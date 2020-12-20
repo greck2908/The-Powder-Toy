@@ -1,27 +1,29 @@
 #ifndef PREVIEWCONTROLLER_H_
 #define PREVIEWCONTROLLER_H_
-#include "Config.h"
 
+#include "gui/preview/PreviewModel.h"
+#include "gui/preview/PreviewView.h"
+#include "Controller.h"
+#include "client/SaveInfo.h"
 #include "client/ClientListener.h"
 
-#include <functional>
-
-class SaveInfo;
 class LoginController;
 class PreviewModel;
 class PreviewView;
 class PreviewController: public ClientListener {
 	int saveId;
+	int saveDate;
 	PreviewModel * previewModel;
 	PreviewView * previewView;
 	LoginController * loginWindow;
-	std::function<void ()> onDone;
+	ControllerCallback * callback;
 public:
-	void NotifyAuthUserChanged(Client * sender) override;
+	virtual void NotifyAuthUserChanged(Client * sender);
 	inline int SaveID() { return saveId; }
 
 	bool HasExited;
-	PreviewController(int saveID, int saveDate, bool instant, std::function<void ()> onDone = nullptr);
+	PreviewController(int saveID, bool instant, ControllerCallback * callback);
+	PreviewController(int saveID, int saveDate, bool instant, ControllerCallback * callback);
 	void Exit();
 	void DoOpen();
 	void OpenInBrowser();

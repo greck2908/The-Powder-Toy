@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_DLAY()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_DLAY PT_DLAY 79
+Element_DLAY::Element_DLAY()
 {
 	Identifier = "DEFAULT_PT_DLAY";
 	Name = "DLAY";
@@ -29,7 +26,7 @@ void Element::Element_DLAY()
 
 	Weight = 100;
 
-	DefaultProperties.temp = 4.0f + 273.15f;
+	Temperature = 4.0f+273.15f;
 	HeatConduct = 0;
 	Description = "Conducts with temperature-dependent delay. (use HEAT/COOL).";
 
@@ -44,11 +41,12 @@ void Element::Element_DLAY()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_DLAY::update;
+	Graphics = &Element_DLAY::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_DLAY static int update(UPDATE_FUNC_ARGS)
+int Element_DLAY::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry, oldl;
 	oldl = parts[i].life;
@@ -94,7 +92,10 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+//#TPT-Directive ElementHeader Element_DLAY static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_DLAY::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	int stage = (int)(((float)cpart->life/(cpart->temp-273.15))*100.0f);
 	*colr += stage;
@@ -102,3 +103,6 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	*colb += stage;
 	return 0;
 }
+
+
+Element_DLAY::~Element_DLAY() {}

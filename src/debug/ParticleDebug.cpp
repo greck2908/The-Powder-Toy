@@ -1,8 +1,7 @@
 #include "ParticleDebug.h"
-
-#include "gui/game/GameModel.h"
-
-#include "simulation/Simulation.h"
+#include "gui/interface/Engine.h"
+#include "gui/game/GameView.h"
+#include "gui/game/GameController.h"
 
 ParticleDebug::ParticleDebug(unsigned int id, Simulation * sim, GameModel * model):
 	DebugInfo(id),

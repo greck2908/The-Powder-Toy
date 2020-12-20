@@ -1,28 +1,24 @@
 #include "ConsoleView.h"
-
-#include "ConsoleController.h"
-#include "ConsoleModel.h"
-
-#include <deque>
-
-#include "graphics/Graphics.h"
-
-#include "Config.h"
-
-#include "ConsoleCommand.h"
-
 #include "gui/interface/Keys.h"
-#include "gui/interface/Label.h"
-#include "gui/interface/Textbox.h"
 
 ConsoleView::ConsoleView():
 	ui::Window(ui::Point(0, 0), ui::Point(WINDOWW, 150)),
 	commandField(NULL)
 {
+	class CommandHighlighter: public ui::TextboxAction
+	{
+		ConsoleView * v;
+	public:
+		CommandHighlighter(ConsoleView * v_) { v = v_; }
+		virtual void TextChangedCallback(ui::Textbox * sender)
+		{
+			sender->SetDisplayText(v->c->FormatCommand(sender->GetText()));
+		}
+	};
 	commandField = new ui::Textbox(ui::Point(0, Size.Y-16), ui::Point(Size.X, 16), "");
 	commandField->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
 	commandField->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
-	commandField->SetActionCallback({ [this] { commandField->SetDisplayText(c->FormatCommand(commandField->GetText())); } });
+	commandField->SetActionCallback(new CommandHighlighter(this));
 	AddComponent(commandField);
 	FocusComponent(commandField);
 	commandField->SetBorder(false);
@@ -48,10 +44,6 @@ void ConsoleView::DoKeyPress(int key, int scan, bool repeat, bool shift, bool ct
 		c->NextCommand();
 		break;
 	case SDLK_UP:
-		if (editingNewCommand)
-		{
-			newCommand = commandField->GetText();
-		}
 		c->PreviousCommand();
 		break;
 	default:
@@ -99,16 +91,7 @@ void ConsoleView::NotifyPreviousCommandsChanged(ConsoleModel * sender)
 
 void ConsoleView::NotifyCurrentCommandChanged(ConsoleModel * sender)
 {
-	bool oldEditingNewCommand = editingNewCommand;
-	editingNewCommand = sender->GetCurrentCommandIndex() >= sender->GetPreviousCommands().size();
-	if (!oldEditingNewCommand && editingNewCommand)
-	{
-		commandField->SetText(newCommand);
-	}
-	else
-	{
-		commandField->SetText(sender->GetCurrentCommand().Command);
-	}
+	commandField->SetText(sender->GetCurrentCommand().Command);
 	commandField->SetDisplayText(c->FormatCommand(commandField->GetText()));
 }
 

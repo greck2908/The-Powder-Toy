@@ -3,19 +3,16 @@
 
 #include "common/String.h"
 #include "Activity.h"
+#include "client/requestbroker/RequestListener.h"
 #include "client/UserInfo.h"
-#include "client/http/SaveUserInfoRequest.h"
-#include "client/http/GetUserInfoRequest.h"
-#include "client/http/RequestMonitor.h"
+#include "gui/interface/Window.h"
 
 namespace ui
 {
 class Label;
 class ScrollPanel;
 }
-using SaveUserInfoRequestMonitor = http::RequestMonitor<http::SaveUserInfoRequest>;
-using GetUserInfoRequestMonitor = http::RequestMonitor<http::GetUserInfoRequest>;
-class ProfileActivity: public WindowActivity, public SaveUserInfoRequestMonitor, public GetUserInfoRequestMonitor {
+class ProfileActivity: public WindowActivity, public RequestListener {
 	ui::ScrollPanel *scrollPanel;
 	ui::Label *location;
 	ui::Label *bio;
@@ -29,12 +26,11 @@ class ProfileActivity: public WindowActivity, public SaveUserInfoRequestMonitor,
 public:
 	ProfileActivity(ByteString username);
 	virtual ~ProfileActivity();
-	void OnTick(float dt) override;
-	void OnDraw() override;
-	void OnTryExit(ExitMethod method) override;
-
-	void OnResponse(bool saveUserInfoStatus) override;
-	void OnResponse(std::unique_ptr<UserInfo> getUserInfoResult) override;
+	virtual void OnResponseReady(void * userDataPtr, int identifier);
+	virtual void OnResponseFailed(int identifier);
+	virtual void OnTick(float dt);
+	virtual void OnDraw();
+	virtual void OnTryExit(ExitMethod method);
 
 	void ResizeArea();
 };

@@ -1,8 +1,6 @@
 #pragma once
-#include "Config.h"
 
 #include "common/String.h"
-
 #include <vector>
 
 class GameModel;

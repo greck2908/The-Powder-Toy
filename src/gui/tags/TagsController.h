@@ -1,22 +1,19 @@
 #ifndef TAGSCONTROLLER_H_
 #define TAGSCONTROLLER_H_
-#include "Config.h"
 
-#include "common/String.h"
+#include "Controller.h"
+#include "TagsView.h"
+#include "client/SaveInfo.h"
 
-#include <functional>
-
-class SaveInfo;
 class TagsView;
 class TagsModel;
-class TagsController
-{
-	std::function<void ()> onDone;
+class TagsController {
+	ControllerCallback * callback;
 	TagsView * tagsView;
 	TagsModel * tagsModel;
 public:
 	bool HasDone;
-	TagsController(std::function<void ()> onDone, SaveInfo * save);
+	TagsController(ControllerCallback * callback, SaveInfo * save);
 	TagsView * GetView() {return tagsView;}
 	SaveInfo * GetSave();
 	void RemoveTag(ByteString tag);

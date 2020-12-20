@@ -2,20 +2,20 @@
 #define COPYTEXTBUTTON_H
 
 #include "Button.h"
+#include "Label.h"
 
 namespace ui
 {
-	class Label;
 class CopyTextButton : public Button
 {
 	ui::Label *copyTextLabel;
 public:
 	CopyTextButton(Point position, Point size, String buttonText, Label *copyTextLabel_);
 
-	void OnMouseClick(int x, int y, unsigned int button) override;
+	virtual void OnMouseClick(int x, int y, unsigned int button);
 
-	void OnMouseEnter(int x, int y) override;
-	void OnMouseLeave(int x, int y) override;
+	virtual void OnMouseEnter(int x, int y);
+	virtual void OnMouseLeave(int x, int y);
 };
 }
 #endif /* COPYTEXTBUTTON_H */

@@ -1,17 +1,11 @@
-#include "RichLabel.h"
-
 #include <vector>
 #include <exception>
 
+#include "RichLabel.h"
 #include "Platform.h"
-
 #include "gui/interface/Point.h"
 #include "gui/interface/Component.h"
-
 #include "graphics/Graphics.h"
-#include "graphics/FontReader.h"
-
-#include "Colour.h"
 
 using namespace ui;
 
@@ -161,7 +155,6 @@ void RichLabel::updateRichText()
 		delete[] regionsStack;
 	}
 	TextPosition(displayText);
-	displayTextWrapper.Update(displayText, false, 0);
 }
 
 void RichLabel::SetText(String text)
@@ -189,15 +182,15 @@ void RichLabel::Draw(const Point& screenPos)
 
 void RichLabel::OnMouseClick(int x, int y, unsigned button)
 {
-	int cursorPosition = displayTextWrapper.Point2Index(x - textPosition.X, y - textPosition.Y).raw_index;
-	for (auto const &region : regions)
+	int cursorPosition = Graphics::CharIndexAtPosition(displayText, x-textPosition.X, y-textPosition.Y);
+	for(std::vector<RichTextRegion>::iterator iter = regions.begin(), end = regions.end(); iter != end; ++iter)
 	{
-		if (region.start <= cursorPosition && region.finish >= cursorPosition)
+		if((*iter).start <= cursorPosition && (*iter).finish >= cursorPosition)
 		{
-			switch (region.action)
+			switch((*iter).action)
 			{
-			case 'a':
-				Platform::OpenURI(region.actionData.ToUtf8());
+				case 'a':
+					Platform::OpenURI((*iter).actionData.ToUtf8());
 				break;
 			}
 		}

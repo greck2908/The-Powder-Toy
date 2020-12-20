@@ -1,11 +1,5 @@
 #include "SearchView.h"
-
-#include "SearchController.h"
-#include "SearchModel.h"
-
 #include "client/Client.h"
-#include "client/SaveInfo.h"
-
 #include "gui/interface/Keys.h"
 #include "gui/interface/SaveButton.h"
 #include "gui/interface/Button.h"
@@ -13,20 +7,14 @@
 #include "gui/interface/RichLabel.h"
 #include "gui/interface/Textbox.h"
 #include "gui/interface/Spinner.h"
-
+#include "Misc.h"
+#include "Format.h"
 #include "PowderToy.h"
-#include "Config.h"
-
-#include "graphics/Graphics.h"
-
-#ifdef GetUserName
-# undef GetUserName // dammit windows
-#endif
 
 SearchView::SearchView():
 	ui::Window(ui::Point(0, 0), ui::Point(WINDOWW, WINDOWH)),
 	c(NULL),
-	saveButtons(std::vector<ui::SaveButton*>()),
+	saveButtons(vector<ui::SaveButton*>()),
 	errorLabel(NULL),
 	changed(true),
 	lastChanged(0),
@@ -43,10 +31,20 @@ SearchView::SearchView():
 	{
 		motdLabel  = new ui::RichLabel(ui::Point(51, WINDOWH-18), ui::Point(WINDOWW-102, 16), Client::Ref().GetMessageOfTheDay());
 	}
-	catch (std::exception & e) { }
+	catch (std::exception e) { }
 
+	class PageNumAction : public ui::TextboxAction
+	{
+		SearchView * v;
+	public:
+		PageNumAction(SearchView * _v) { v = _v; }
+		void TextChangedCallback(ui::Textbox * sender)
+		{
+			v->textChanged();
+		}
+	};
 	pageTextbox = new ui::Textbox(ui::Point(283, WINDOWH-18), ui::Point(41, 16), "");
-	pageTextbox->SetActionCallback({ [this] { textChanged(); } });
+	pageTextbox->SetActionCallback(new PageNumAction(this));
 	pageTextbox->SetInputType(ui::Textbox::Number);
 	pageLabel = new ui::Label(ui::Point(0, WINDOWH-18), ui::Point(30, 16), "Page"); //page [TEXTBOX] of y
 	pageLabel->Appearance.HorizontalAlign = ui::Appearance::AlignRight;
@@ -56,42 +54,93 @@ SearchView::SearchView():
 	AddComponent(pageCountLabel);
 	AddComponent(pageTextbox);
 
+	class SearchAction : public ui::TextboxAction
+	{
+		SearchView * v;
+	public:
+		SearchAction(SearchView * _v) { v = _v; }
+		void TextChangedCallback(ui::Textbox * sender)
+		{
+			v->doSearch();
+		}
+	};
 	searchField = new ui::Textbox(ui::Point(60, 10), ui::Point(WINDOWW-238, 17), "", "[search]");
 	searchField->Appearance.icon = IconSearch;
 	searchField->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
 	searchField->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
-	searchField->SetActionCallback({ [this] { doSearch(); } });
+	searchField->SetActionCallback(new SearchAction(this));
 	FocusComponent(searchField);
 
+
+	class SortAction : public ui::ButtonAction
+	{
+		SearchView * v;
+	public:
+		SortAction(SearchView * _v) { v = _v; }
+		void ActionCallback(ui::Button * sender)
+		{
+			v->c->ChangeSort();
+		}
+	};
 	sortButton = new ui::Button(ui::Point(WINDOWW-140, 10), ui::Point(61, 17), "Sort");
 	sortButton->SetIcon(IconVoteSort);
 	sortButton->SetTogglable(true);
-	sortButton->SetActionCallback({ [this] { c->ChangeSort(); } });
+	sortButton->SetActionCallback(new SortAction(this));
 	sortButton->Appearance.HorizontalAlign = ui::Appearance::AlignCentre;
 	sortButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
 	AddComponent(sortButton);
 
+	class MyOwnAction : public ui::ButtonAction
+	{
+		SearchView * v;
+	public:
+		MyOwnAction(SearchView * _v) { v = _v; }
+		void ActionCallback(ui::Button * sender)
+		{
+			v->c->ShowOwn(sender->GetToggleState());
+		}
+	};
 	ownButton = new ui::Button(ui::Point(WINDOWW-70, 10), ui::Point(61, 17), "My Own");
 	ownButton->SetIcon(IconMyOwn);
 	ownButton->SetTogglable(true);
-	ownButton->SetActionCallback({ [this] { c->ShowOwn(ownButton->GetToggleState()); } });
+	ownButton->SetActionCallback(new MyOwnAction(this));
 	ownButton->Appearance.HorizontalAlign = ui::Appearance::AlignCentre;
 	ownButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
 	AddComponent(ownButton);
 
+	class FavAction : public ui::ButtonAction
+	{
+		SearchView * v;
+	public:
+		FavAction(SearchView * _v) { v = _v; }
+		void ActionCallback(ui::Button * sender)
+		{
+			v->c->ShowFavourite(sender->GetToggleState());
+		}
+	};
 	favButton = new ui::Button(searchField->Position+ui::Point(searchField->Size.X+15, 0), ui::Point(17, 17), "");
 	favButton->SetIcon(IconFavourite);
 	favButton->SetTogglable(true);
 	favButton->Appearance.Margin.Left+=2;
-	favButton->SetActionCallback({ [this] { c->ShowFavourite(favButton->GetToggleState()); } });
+	favButton->SetActionCallback(new FavAction(this));
 	favButton->Appearance.HorizontalAlign = ui::Appearance::AlignCentre;
 	favButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
 	favButton->Appearance.BorderInactive = ui::Colour(170,170,170);
 	AddComponent(favButton);
 
+	class ClearSearchAction : public ui::ButtonAction
+	{
+		SearchView * v;
+	public:
+		ClearSearchAction(SearchView * _v) { v = _v; }
+		void ActionCallback(ui::Button * sender)
+		{
+			v->clearSearch();
+		}
+	};
 	ui::Button * clearSearchButton = new ui::Button(searchField->Position+ui::Point(searchField->Size.X-1, 0), ui::Point(17, 17), "");
 	clearSearchButton->SetIcon(IconClose);
-	clearSearchButton->SetActionCallback({ [this] { clearSearch(); } });
+	clearSearchButton->SetActionCallback(new ClearSearchAction(this));
 	clearSearchButton->Appearance.Margin.Left+=2;
 	clearSearchButton->Appearance.Margin.Top+=2;
 	clearSearchButton->Appearance.HorizontalAlign = ui::Appearance::AlignCentre;
@@ -99,11 +148,22 @@ SearchView::SearchView():
 	clearSearchButton->Appearance.BorderInactive = ui::Colour(170,170,170);
 	AddComponent(clearSearchButton);
 
-	nextButton->SetActionCallback({ [this] { c->SetPageRelative(1); } });
+	class RelativePageAction : public ui::ButtonAction
+	{
+		SearchView * v;
+		int offset;
+	public:
+		RelativePageAction(SearchView * _v, int _offset): v(_v), offset(_offset) {}
+		void ActionCallback(ui::Button * sender)
+		{
+			v->c->SetPageRelative(offset);
+		}
+	};
+	nextButton->SetActionCallback(new RelativePageAction(this, 1));
 	nextButton->Appearance.HorizontalAlign = ui::Appearance::AlignRight;
 	nextButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
 	nextButton->Visible = false;
-	previousButton->SetActionCallback({ [this] { c->SetPageRelative(-1); } });
+	previousButton->SetActionCallback(new RelativePageAction(this, -1));
 	previousButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
 	previousButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
 	previousButton->Visible = false;
@@ -119,24 +179,68 @@ SearchView::SearchView():
 	searchPrompt->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
 	AddComponent(searchPrompt);
 
+	class RemoveSelectedAction : public ui::ButtonAction
+	{
+		SearchView * v;
+	public:
+		RemoveSelectedAction(SearchView * _v) { v = _v; }
+		void ActionCallback(ui::Button * sender)
+		{
+			v->c->RemoveSelected();
+		}
+	};
+
+	class UnpublishSelectedAction : public ui::ButtonAction
+	{
+		SearchView * v;
+	public:
+		UnpublishSelectedAction(SearchView * _v) { v = _v; }
+		void ActionCallback(ui::Button * sender)
+		{
+			v->c->UnpublishSelected(v->publishButtonShown);
+		}
+	};
+
+	class FavouriteSelectedAction : public ui::ButtonAction
+	{
+		SearchView * v;
+	public:
+		FavouriteSelectedAction(SearchView * _v) { v = _v; }
+		void ActionCallback(ui::Button * sender)
+		{
+			v->c->FavouriteSelected();
+		}
+	};
+
+	class ClearSelectionAction : public ui::ButtonAction
+	{
+		SearchView * v;
+	public:
+		ClearSelectionAction(SearchView * _v) { v = _v; }
+		void ActionCallback(ui::Button * sender)
+		{
+			v->c->ClearSelection();
+		}
+	};
+
 	removeSelected = new ui::Button(ui::Point(((WINDOWW-415)/2), WINDOWH-18), ui::Point(100, 16), "Delete");
 	removeSelected->Visible = false;
-	removeSelected->SetActionCallback({ [this] { c->RemoveSelected(); } });
+	removeSelected->SetActionCallback(new RemoveSelectedAction(this));
 	AddComponent(removeSelected);
 
 	unpublishSelected = new ui::Button(ui::Point(((WINDOWW-415)/2)+105, WINDOWH-18), ui::Point(100, 16), "Unpublish");
 	unpublishSelected->Visible = false;
-	unpublishSelected->SetActionCallback({ [this] { c->UnpublishSelected(publishButtonShown); } });
+	unpublishSelected->SetActionCallback(new UnpublishSelectedAction(this));
 	AddComponent(unpublishSelected);
 
 	favouriteSelected = new ui::Button(ui::Point(((WINDOWW-415)/2)+210, WINDOWH-18), ui::Point(100, 16), "Favourite");
 	favouriteSelected->Visible = false;
-	favouriteSelected->SetActionCallback({ [this] { c->FavouriteSelected(); } });
+	favouriteSelected->SetActionCallback(new FavouriteSelectedAction(this));
 	AddComponent(favouriteSelected);
 
 	clearSelection = new ui::Button(ui::Point(((WINDOWW-415)/2)+315, WINDOWH-18), ui::Point(100, 16), "Clear selection");
 	clearSelection->Visible = false;
-	clearSelection->SetActionCallback({ [this] { c->ClearSelection(); } });
+	clearSelection->SetActionCallback(new ClearSelectionAction(this));
 	AddComponent(clearSelection);
 
 	CheckAccess();
@@ -150,7 +254,7 @@ void SearchView::NotifyMessageOfTheDay(Client * sender)
 		{
 			motdLabel->SetText(sender->GetMessageOfTheDay());
 		}
-		catch (std::exception & e)
+		catch (std::exception e)
 		{
 			motdLabel = nullptr;
 		}
@@ -365,7 +469,7 @@ void SearchView::NotifyTagListChanged(SearchModel * sender)
 	int tagWidth = 0, tagHeight = 0, tagX = 0, tagY = 0, tagsX = 6, tagsY = 4, tagPadding = 1;
 	int tagAreaWidth, tagAreaHeight, tagXOffset = 0, tagYOffset = 0;
 
-	std::vector<std::pair<ByteString, int> > tags = sender->GetTagList();
+	vector<pair<ByteString, int> > tags = sender->GetTagList();
 
 	if (motdLabel)
 	{
@@ -409,13 +513,24 @@ void SearchView::NotifyTagListChanged(SearchModel * sender)
 		}
 	}
 
+	class TagAction: public ui::ButtonAction
+	{
+		SearchView * v;
+		ByteString tag;
+	public:
+		TagAction(SearchView * v, ByteString tag) : v(v), tag(tag) {}
+		virtual void ActionCallback(ui::Button * sender)
+		{
+			v->Search(tag.FromUtf8());
+		}
+	};
 	if (sender->GetShowTags())
 	{
 		for (size_t i = 0; i < tags.size(); i++)
 		{
 			int maxTagVotes = tags[0].second;
 
-			std::pair<ByteString, int> tag = tags[i];
+			pair<ByteString, int> tag = tags[i];
 
 			if (tagX == tagsX)
 			{
@@ -438,9 +553,7 @@ void SearchView::NotifyTagListChanged(SearchModel * sender)
 				ui::Point(tagWidth, tagHeight),
 				tag.first.FromUtf8()
 				);
-			tagButton->SetActionCallback({ [this, tag] {
-				Search(tag.first.FromUtf8());
-			} });
+			tagButton->SetActionCallback(new TagAction(this, tag.first));
 			tagButton->Appearance.BorderInactive = ui::Colour(0, 0, 0);
 			tagButton->Appearance.BorderHover = ui::Colour(0, 0, 0);
 			tagButton->Appearance.BorderActive = ui::Colour(0, 0, 0);
@@ -461,7 +574,7 @@ void SearchView::NotifySaveListChanged(SearchModel * sender)
 	int buttonWidth, buttonHeight, saveX = 0, saveY = 0, savesX = 5, savesY = 4, buttonPadding = 1;
 	int buttonAreaWidth, buttonAreaHeight, buttonXOffset, buttonYOffset;
 
-	std::vector<SaveInfo*> saves = sender->GetSaveList();
+	vector<SaveInfo*> saves = sender->GetSaveList();
 	//string messageOfTheDay = sender->GetMessageOfTheDay();
 
 	if(sender->GetShowFavourite())
@@ -469,6 +582,7 @@ void SearchView::NotifySaveListChanged(SearchModel * sender)
 	else
 		favouriteSelected->SetText("Favourite");
 
+	Client::Ref().ClearThumbnailRequests();
 	for (size_t i = 0; i < saveButtons.size(); i++)
 	{
 		RemoveComponent(saveButtons[i]);
@@ -548,6 +662,30 @@ void SearchView::NotifySaveListChanged(SearchModel * sender)
 		buttonWidth = (buttonAreaWidth/savesX) - buttonPadding*2;
 		buttonHeight = (buttonAreaHeight/savesY) - buttonPadding*2;
 
+
+
+		class SaveOpenAction: public ui::SaveButtonAction
+		{
+			SearchView * v;
+		public:
+			SaveOpenAction(SearchView * _v) { v = _v; }
+			virtual void ActionCallback(ui::SaveButton * sender)
+			{
+				v->c->OpenSave(sender->GetSave()->GetID(), sender->GetSave()->GetVersion());
+			}
+			virtual void SelectedCallback(ui::SaveButton * sender)
+			{
+				v->c->Selected(sender->GetSave()->GetID(), sender->GetSelected());
+			}
+			virtual void AltActionCallback(ui::SaveButton * sender)
+			{
+				v->Search(String::Build("history:", sender->GetSave()->GetID()));
+			}
+			virtual void AltActionCallback2(ui::SaveButton * sender)
+			{
+				v->Search(String::Build("user:", sender->GetSave()->GetUserName().FromUtf8()));
+			}
+		};
 		for (size_t i = 0; i < saves.size(); i++)
 		{
 			if (saveX == savesX)
@@ -566,12 +704,7 @@ void SearchView::NotifySaveListChanged(SearchModel * sender)
 						ui::Point(buttonWidth, buttonHeight),
 						saves[i]);
 			saveButton->AddContextMenu(0);
-			saveButton->SetActionCallback({
-				[this, saveButton] { c->OpenSave(saveButton->GetSave()->GetID(), saveButton->GetSave()->GetVersion()); },
-				[this, saveButton] { Search(String::Build("history:", saveButton->GetSave()->GetID())); },
-				[this, saveButton] { Search(String::Build("user:", saveButton->GetSave()->GetUserName().FromUtf8())); },
-				[this, saveButton] { c->Selected(saveButton->GetSave()->GetID(), saveButton->GetSelected()); }
-			});
+			saveButton->SetActionCallback(new SaveOpenAction(this));
 			if(Client::Ref().GetAuthUser().UserID)
 				saveButton->SetSelectable(true);
 			if (saves[i]->GetUserName() == Client::Ref().GetAuthUser().Username || Client::Ref().GetAuthUser().UserElevation == User::ElevationAdmin || Client::Ref().GetAuthUser().UserElevation == User::ElevationModerator)
@@ -585,7 +718,7 @@ void SearchView::NotifySaveListChanged(SearchModel * sender)
 
 void SearchView::NotifySelectedChanged(SearchModel * sender)
 {
-	std::vector<int> selected = sender->GetSelected();
+	vector<int> selected = sender->GetSelected();
 	size_t published = 0;
 	for (size_t j = 0; j < saveButtons.size(); j++)
 	{
@@ -654,8 +787,6 @@ void SearchView::OnKeyPress(int key, int scan, bool repeat, bool shift, bool ctr
 		return;
 	if (key == SDLK_ESCAPE)
 		c->Exit();
-	else if ((focusedComponent_ != pageTextbox && focusedComponent_ != searchField) && scan == SDL_SCANCODE_A && ctrl)
-		c->SelectAllSaves();
 	else if (key == SDLK_LCTRL || key == SDLK_RCTRL)
 		c->InstantOpen(true);
 }

@@ -1,10 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-static void create(ELEMENT_CREATE_FUNC_ARGS);
-
-void Element::Element_WARP()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_WARP PT_WARP 96
+Element_WARP::Element_WARP()
 {
 	Identifier = "DEFAULT_PT_WARP";
 	Name = "WARP";
@@ -30,6 +26,7 @@ void Element::Element_WARP()
 
 	Weight = 1;
 
+	Temperature = R_TEMP +273.15f;
 	HeatConduct = 100;
 	Description = "Displaces other elements.";
 
@@ -44,12 +41,12 @@ void Element::Element_WARP()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
-	Graphics = &graphics;
-	Create = &create;
+	Update = &Element_WARP::update;
+	Graphics = &Element_WARP::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_WARP static int update(UPDATE_FUNC_ARGS)
+int Element_WARP::update(UPDATE_FUNC_ARGS)
 {
 	int trade, r, rx, ry;
 	if (parts[i].tmp2>2000)
@@ -86,14 +83,12 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_WARP static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_WARP::graphics(GRAPHICS_FUNC_ARGS)
 {
 	*colr = *colg = *colb = *cola = 0;
 	*pixel_mode &= ~PMODE;
 	return 0;
 }
 
-static void create(ELEMENT_CREATE_FUNC_ARGS)
-{
-	sim->parts[i].life = RNG::Ref().between(70, 164);
-}
+Element_WARP::~Element_WARP() {}

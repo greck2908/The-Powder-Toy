@@ -1,10 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-bool Element_PCLN_ctypeDraw(CTYPEDRAW_FUNC_ARGS);
-
-void Element::Element_PCLN()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_PCLN PT_PCLN 74
+Element_PCLN::Element_PCLN()
 {
 	Identifier = "DEFAULT_PT_PCLN";
 	Name = "PCLN";
@@ -30,10 +26,11 @@ void Element::Element_PCLN()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 251;
 	Description = "Powered clone. When activated, duplicates any particles it touches.";
 
-	Properties = TYPE_SOLID | PROP_NOCTYPEDRAW;
+	Properties = TYPE_SOLID|PROP_NOCTYPEDRAW;
 
 	LowPressure = IPL;
 	LowPressureTransition = NT;
@@ -44,12 +41,12 @@ void Element::Element_PCLN()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
-	Graphics = &graphics;
-	CtypeDraw = &Element_PCLN_ctypeDraw;
+	Update = &Element_PCLN::update;
+	Graphics = &Element_PCLN::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_PCLN static int update(UPDATE_FUNC_ARGS)
+int Element_PCLN::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry, rt;
 	if (parts[i].life>0 && parts[i].life!=10)
@@ -79,7 +76,7 @@ static int update(UPDATE_FUNC_ARGS)
 						parts[i].life = 10;
 				}
 			}
-	if (parts[i].ctype<=0 || parts[i].ctype>=PT_NUM || !sim->elements[parts[i].ctype].Enabled)
+	if (parts[i].ctype<=0 || parts[i].ctype>=PT_NUM || !sim->elements[parts[i].ctype].Enabled || (parts[i].ctype==PT_LIFE && (parts[i].tmp<0 || parts[i].tmp>=NGOL)))
 		for (rx=-1; rx<2; rx++)
 			for (ry=-1; ry<2; ry++)
 				if (BOUNDS_CHECK)
@@ -139,7 +136,10 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+//#TPT-Directive ElementHeader Element_PCLN static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_PCLN::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	int lifemod = ((cpart->life>10?10:cpart->life)*10);
 	*colr += lifemod;
@@ -147,11 +147,5 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	return 0;
 }
 
-bool Element_PCLN_ctypeDraw(CTYPEDRAW_FUNC_ARGS)
-{
-	if (t == PT_PSCN || t == PT_NSCN || t == PT_SPRK)
-	{
-		return false;
-	}
-	return Element::ctypeDrawVInTmp(CTYPEDRAW_FUNC_SUBCALL_ARGS);
-}
+
+Element_PCLN::~Element_PCLN() {}

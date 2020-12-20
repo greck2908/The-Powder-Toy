@@ -1,7 +1,6 @@
 #pragma once
 
 #include "LuaLuna.h"
-#include "LuaSmartRef.h"
 
 namespace ui
 {
@@ -9,13 +8,6 @@ namespace ui
 }
 
 class LuaScriptInterface;
-
-class LuaComponentCallback : public LuaSmartRef
-{
-public:
-	using LuaSmartRef::LuaSmartRef;
-	int CheckAndAssignArg1(lua_State *l);
-};
 
 class LuaComponent
 {
@@ -27,7 +19,7 @@ protected:
 	int visible(lua_State * l);
 public:
 	LuaScriptInterface * ci;
-	int owner_ref;
+	int UserData;
 
 	ui::Component * GetComponent() { return component; }
 	LuaComponent(lua_State * l);

@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_DMG()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_DMG PT_DMG 163
+Element_DMG::Element_DMG()
 {
 	Identifier = "DEFAULT_PT_DMG";
 	Name = "DMG";
@@ -29,7 +26,7 @@ void Element::Element_DMG()
 
 	Weight = 30;
 
-	DefaultProperties.temp = R_TEMP - 2.0f + 273.15f;
+	Temperature = R_TEMP-2.0f	+273.15f;
 	HeatConduct = 29;
 	Description = "Generates damaging pressure and breaks any elements it hits.";
 
@@ -44,11 +41,12 @@ void Element::Element_DMG()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_DMG::update;
+	Graphics = &Element_DMG::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_DMG static int update(UPDATE_FUNC_ARGS)
+int Element_DMG::update(UPDATE_FUNC_ARGS)
 {
 	int r, rr, rx, ry, nxi, nxj, t, dist;
 	int rad = 25;
@@ -109,8 +107,14 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+//#TPT-Directive ElementHeader Element_DMG static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_DMG::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	*pixel_mode |= PMODE_FLARE;
 	return 1;
 }
+
+
+Element_DMG::~Element_DMG() {}

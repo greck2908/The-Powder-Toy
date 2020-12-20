@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-
-void Element::Element_BANG()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_BANG PT_BANG 139
+Element_BANG::Element_BANG()
 {
 	Identifier = "DEFAULT_PT_BANG";
 	Name = "TNT";
@@ -28,6 +26,7 @@ void Element::Element_BANG()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 88;
 	Description = "TNT, explodes all at once.";
 
@@ -42,10 +41,11 @@ void Element::Element_BANG()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
+	Update = &Element_BANG::update;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_BANG static int update(UPDATE_FUNC_ARGS)
+int Element_BANG::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry;
 	if(parts[i].tmp==0)
@@ -120,3 +120,6 @@ static int update(UPDATE_FUNC_ARGS)
 	}
 	return 0;
 }
+
+
+Element_BANG::~Element_BANG() {}

@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_THDR()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_THDR PT_THDR 48
+Element_THDR::Element_THDR()
 {
 	Identifier = "DEFAULT_PT_THDR";
 	Name = "THDR";
@@ -29,7 +26,7 @@ void Element::Element_THDR()
 
 	Weight = 1;
 
-	DefaultProperties.temp = 9000.0f + 273.15f;
+	Temperature = 9000.0f		+273.15f;
 	HeatConduct = 1;
 	Description = "Lightning! Very hot, inflicts damage upon most materials, and transfers current to metals.";
 
@@ -44,11 +41,12 @@ void Element::Element_THDR()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_THDR::update;
+	Graphics = &Element_THDR::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_THDR static int update(UPDATE_FUNC_ARGS)
+int Element_THDR::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry, rt;
 	bool kill=false;
@@ -86,7 +84,10 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+//#TPT-Directive ElementHeader Element_THDR static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_THDR::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	*firea = 160;
 	*fireg = 192;
@@ -95,3 +96,6 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	*pixel_mode |= FIRE_ADD;
 	return 1;
 }
+
+
+Element_THDR::~Element_THDR() {}

@@ -1,10 +1,8 @@
 #include "common/tpt-minmax.h"
-#include "simulation/ElementCommon.h"
+#include "simulation/Elements.h"
 
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_WOOD()
+//#TPT-Directive ElementClass Element_WOOD PT_WOOD 17
+Element_WOOD::Element_WOOD()
 {
 	Identifier = "DEFAULT_PT_WOOD";
 	Name = "WOOD";
@@ -30,6 +28,7 @@ void Element::Element_WOOD()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 164;
 	Description = "Wood, flammable.";
 
@@ -44,26 +43,19 @@ void Element::Element_WOOD()
 	HighTemperature = 873.0f;
 	HighTemperatureTransition = PT_FIRE;
 
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_WOOD::update;
+	Graphics = &Element_WOOD::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_WOOD static int update(UPDATE_FUNC_ARGS)
+int Element_WOOD::update(UPDATE_FUNC_ARGS)
 {
 	if (parts[i].temp > 450 && parts[i].temp > parts[i].tmp)
 		parts[i].tmp = (int)parts[i].temp;
-
-	if (parts[i].temp > 773.0f && sim->pv[y/CELL][x/CELL] <= -10.0f)
-	{
-		float temp = parts[i].temp;
-		sim->create_part(i, x, y, PT_BCOL);
-		parts[i].temp = temp;
-	}
-
 	return 0;
 }
-
-static int graphics(GRAPHICS_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_WOOD static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_WOOD::graphics(GRAPHICS_FUNC_ARGS)
 {
 	float maxtemp = std::max((float)cpart->tmp, cpart->temp);
 	if (maxtemp > 400)
@@ -80,3 +72,5 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	}
 	return 0;
 }
+
+Element_WOOD::~Element_WOOD() {}

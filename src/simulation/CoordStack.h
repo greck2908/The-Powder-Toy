@@ -24,7 +24,7 @@ class CoordStackOverflowException: public std::exception
 {
 public:
 	CoordStackOverflowException() { }
-	const char* what() const throw() override
+	virtual const char* what() const throw()
 	{
 		return "Maximum number of entries in the coordinate stack was exceeded";
 	}
@@ -42,11 +42,11 @@ public:
 		stack(NULL),
 		stack_size(0)
 	{
-		stack = new unsigned short[stack_limit][2];
+		stack = (unsigned short(*)[2])(malloc(sizeof(unsigned short)*2*stack_limit));
 	}
 	~CoordStack()
 	{
-		delete[] stack;
+		free(stack);
 	}
 	void push(int x, int y)
 	{

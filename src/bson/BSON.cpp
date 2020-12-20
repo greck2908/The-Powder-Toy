@@ -14,7 +14,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-#include "BSON.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -22,6 +21,7 @@
 #include <ctime>
 #include <climits>
 
+#include "BSON.h"
 
 const int initialBufferSize = 128;
 

@@ -1,10 +1,8 @@
+#include <iostream>
 #include "gui/interface/Button.h"
-
 #include "gui/interface/Window.h"
-
 #include "graphics/Graphics.h"
 #include "Misc.h"
-#include "Colour.h"
 
 namespace ui {
 
@@ -15,7 +13,8 @@ Button::Button(Point position, Point size, String buttonText, String toolTip):
 	isButtonDown(false),
 	isMouseInside(false),
 	isTogglable(false),
-	toggle(false)
+	toggle(false),
+	actionCallback(NULL)
 {
 	TextPosition(ButtonText);
 }
@@ -190,8 +189,8 @@ void Button::OnMouseEnter(int x, int y)
 	isMouseInside = true;
 	if(!Enabled)
 		return;
-	if (actionCallback.mouseEnter)
-		actionCallback.mouseEnter();
+	if(actionCallback)
+		actionCallback->MouseEnterCallback(this);
 }
 
 void Button::OnMouseHover(int x, int y)
@@ -212,16 +211,27 @@ void Button::DoAction()
 {
 	if(!Enabled)
 		return;
-	if (actionCallback.action)
-		actionCallback.action();
+	if(actionCallback)
+		actionCallback->ActionCallback(this);
 }
 
 void Button::DoAltAction()
 {
 	if(!Enabled)
 		return;
-	if (actionCallback.altAction)
-		actionCallback.altAction();
+	if(actionCallback)
+		actionCallback->AltActionCallback(this);
+}
+
+void Button::SetActionCallback(ButtonAction * action)
+{
+	delete actionCallback;
+	actionCallback = action;
+}
+
+Button::~Button()
+{
+	delete actionCallback;
 }
 
 } /* namespace ui */

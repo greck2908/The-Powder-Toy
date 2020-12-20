@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_PRTO()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_PRTO PT_PRTO 110
+Element_PRTO::Element_PRTO()
 {
 	Identifier = "DEFAULT_PT_PRTO";
 	Name = "PRTO";
@@ -29,6 +26,7 @@ void Element::Element_PRTO()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 0;
 	Description = "Portal OUT. Particles come out here. Also has temperature dependent channels. (same as WIFI)";
 
@@ -43,8 +41,8 @@ void Element::Element_PRTO()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_PRTO::update;
+	Graphics = &Element_PRTO::graphics;
 }
 
 /*these are the count values of where the particle gets stored, depending on where it came from
@@ -55,7 +53,8 @@ void Element::Element_PRTO()
    PRTO does +/-1 to the count, so it doesn't jam as easily
 */
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_PRTO static int update(UPDATE_FUNC_ARGS)
+int Element_PRTO::update(UPDATE_FUNC_ARGS)
 {
 	int r, nnx, rx, ry, np, fe = 0;
 	int count = 0;
@@ -172,7 +171,10 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+//#TPT-Directive ElementHeader Element_PRTO static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_PRTO::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	*firea = 8;
 	*firer = 0;
@@ -184,3 +186,6 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	*pixel_mode |= PMODE_ADD;
 	return 1;
 }
+
+
+Element_PRTO::~Element_PRTO() {}

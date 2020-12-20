@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_BOMB()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_BOMB PT_BOMB 129
+Element_BOMB::Element_BOMB()
 {
 	Identifier = "DEFAULT_PT_BOMB";
 	Name = "BOMB";
@@ -29,7 +26,7 @@ void Element::Element_BOMB()
 
 	Weight = 30;
 
-	DefaultProperties.temp = R_TEMP - 2.0f + 273.15f;
+	Temperature = R_TEMP-2.0f	+273.15f;
 	HeatConduct = 29;
 	Description = "Bomb. Explodes and destroys all surrounding particles when it touches something.";
 
@@ -44,11 +41,12 @@ void Element::Element_BOMB()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_BOMB::update;
+	Graphics = &Element_BOMB::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_BOMB static int update(UPDATE_FUNC_ARGS)
+int Element_BOMB::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry, rt, nb;
 
@@ -110,8 +108,14 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+//#TPT-Directive ElementHeader Element_BOMB static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_BOMB::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	*pixel_mode |= PMODE_FLARE;
 	return 1;
 }
+
+
+Element_BOMB::~Element_BOMB() {}

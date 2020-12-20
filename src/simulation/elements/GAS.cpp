@@ -1,6 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-void Element::Element_GAS()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_GAS PT_GAS 10
+Element_GAS::Element_GAS()
 {
 	Identifier = "DEFAULT_PT_GAS";
 	Name = "GAS";
@@ -26,7 +26,7 @@ void Element::Element_GAS()
 
 	Weight = 1;
 
-	DefaultProperties.temp = R_TEMP + 2.0f + 273.15f;
+	Temperature = R_TEMP+2.0f	+273.15f;
 	HeatConduct = 42;
 	Description = "Diffuses quickly and is flammable. Liquefies into OIL under pressure.";
 
@@ -40,4 +40,8 @@ void Element::Element_GAS()
 	LowTemperatureTransition = NT;
 	HighTemperature = 573.0f;
 	HighTemperatureTransition = PT_FIRE;
+
+	Update = NULL;
 }
+
+Element_GAS::~Element_GAS() {}

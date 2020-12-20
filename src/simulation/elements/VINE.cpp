@@ -1,10 +1,8 @@
 #include "common/tpt-minmax.h"
-#include "simulation/ElementCommon.h"
+#include "simulation/Elements.h"
 
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_VINE()
+//#TPT-Directive ElementClass Element_VINE PT_VINE 114
+Element_VINE::Element_VINE()
 {
 	Identifier = "DEFAULT_PT_VINE";
 	Name = "VINE";
@@ -30,6 +28,7 @@ void Element::Element_VINE()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f +273.15f;
 	HeatConduct = 65;
 	Description = "Vine, can grow along WOOD.";
 
@@ -44,13 +43,11 @@ void Element::Element_VINE()
 	HighTemperature = 573.0f;
 	HighTemperatureTransition = PT_FIRE;
 
-	DefaultProperties.tmp = 1;
-
-	Update = &update;
-	Graphics = &graphics; // this used to be missing, maybe for a reason?
+	Update = &Element_VINE::update;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_VINE static int update(UPDATE_FUNC_ARGS)
+int Element_VINE::update(UPDATE_FUNC_ARGS)
 {
 	int r, np, rx, ry, rndstore = RNG::Ref().gen();
 	rx = (rndstore % 3) - 1;
@@ -75,7 +72,8 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_VINE static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_VINE::graphics(GRAPHICS_FUNC_ARGS)
 {
 	float maxtemp = std::max((float)cpart->tmp2, cpart->temp);
 	if (maxtemp > 300)
@@ -91,3 +89,6 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	}
 	return 0;
 }
+
+
+Element_VINE::~Element_VINE() {}

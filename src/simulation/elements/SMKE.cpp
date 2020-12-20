@@ -1,8 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_SMKE()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_SMKE PT_SMKE 57
+Element_SMKE::Element_SMKE()
 {
 	Identifier = "DEFAULT_PT_SMKE";
 	Name = "SMKE";
@@ -28,7 +26,7 @@ void Element::Element_SMKE()
 
 	Weight = 1;
 
-	DefaultProperties.temp = R_TEMP + 320.0f + 273.15f;
+	Temperature = R_TEMP+320.0f+273.15f;
 	HeatConduct = 88;
 	Description = "Smoke, created by fire.";
 
@@ -43,10 +41,13 @@ void Element::Element_SMKE()
 	HighTemperature = 625.0f;
 	HighTemperatureTransition = PT_FIRE;
 
-	Graphics = &graphics;
+	Update = NULL;
+	Graphics = &Element_SMKE::graphics;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_SMKE static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_SMKE::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	*colr = 55;
 	*colg = 55;
@@ -62,3 +63,5 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	//Returning 1 means static, cache as we please
 	return 1;
 }
+
+Element_SMKE::~Element_SMKE() {}

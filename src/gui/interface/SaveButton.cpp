@@ -1,39 +1,33 @@
-#include "SaveButton.h"
+#include <iostream>
+#include <typeinfo>
 
-#include "ContextMenu.h"
+#include "SaveButton.h"
+#include "client/SaveInfo.h"
+#include "graphics/Graphics.h"
+#include "client/requestbroker/RequestBroker.h"
+#include "simulation/SaveRenderer.h"
 #include "Format.h"
+#include "ContextMenu.h"
 #include "Keys.h"
 #include "Mouse.h"
 
-#include "client/Client.h"
-#include "client/ThumbnailRendererTask.h"
-#include "client/SaveFile.h"
-#include "client/SaveInfo.h"
-
-#include "graphics/Graphics.h"
-
 namespace ui {
 
-SaveButton::SaveButton(Point position, Point size) :
+SaveButton::SaveButton(Point position, Point size, SaveInfo * save):
 	Component(position, size),
-	file(nullptr),
-	save(nullptr),
-	wantsDraw(false),
-	triedThumbnail(false),
+	file(NULL),
+	save(save),
+	thumbnail(NULL),
+	waitingForThumb(false),
 	isMouseInsideAuthor(false),
 	isMouseInsideHistory(false),
 	showVotes(false),
-	thumbnailRenderer(nullptr),
 	isButtonDown(false),
 	isMouseInside(false),
 	selected(false),
-	selectable(false)
+	selectable(false),
+	actionCallback(NULL)
 {
-}
-
-SaveButton::SaveButton(Point position, Point size, SaveInfo * save_) : SaveButton(position, size)
-{
-	save = save_;
 	if(save)
 	{
 		name = save->name;
@@ -92,9 +86,22 @@ SaveButton::SaveButton(Point position, Point size, SaveInfo * save_) : SaveButto
 	}
 }
 
-SaveButton::SaveButton(Point position, Point size, SaveFile * file_) : SaveButton(position, size)
+SaveButton::SaveButton(Point position, Point size, SaveFile * file):
+	Component(position, size),
+	file(file),
+	save(NULL),
+	thumbnail(NULL),
+	wantsDraw(false),
+	waitingForThumb(false),
+	isMouseInsideAuthor(false),
+	isMouseInsideHistory(false),
+	showVotes(false),
+	isButtonDown(false),
+	isMouseInside(false),
+	selected(false),
+	selectable(false),
+	actionCallback(NULL)
 {
-	file = file_;
 	if(file)
 	{
 		name = file->GetDisplayName();
@@ -109,65 +116,48 @@ SaveButton::SaveButton(Point position, Point size, SaveFile * file_) : SaveButto
 
 SaveButton::~SaveButton()
 {
-	if (thumbnailRenderer)
-	{
-		thumbnailRenderer->Abandon();
-	}
+	RequestBroker::Ref().DetachRequestListener(this);
+
+	delete thumbnail;
+	delete actionCallback;
 	delete save;
 	delete file;
 }
 
-void SaveButton::OnResponse(std::unique_ptr<VideoBuffer> Thumbnail)
+void SaveButton::OnResponseReady(void * imagePtr, int identifier)
 {
-	thumbnail = std::move(Thumbnail);
+	VideoBuffer * image = (VideoBuffer*)imagePtr;
+	if(image)
+	{
+		delete thumbnail;
+		thumbnail = image;
+		waitingForThumb = false;
+	}
 }
 
 void SaveButton::Tick(float dt)
 {
-	if (!thumbnail)
+	if(!thumbnail && !waitingForThumb)
 	{
-		if (!triedThumbnail)
+		float scaleFactor = (Size.Y-25)/((float)YRES);
+		ui::Point thumbBoxSize = ui::Point(((float)XRES)*scaleFactor, ((float)YRES)*scaleFactor);
+		if(save)
 		{
-			float scaleFactor = (Size.Y-25)/((float)YRES);
-			ui::Point thumbBoxSize = ui::Point(((float)XRES)*scaleFactor, ((float)YRES)*scaleFactor);
-			if (save)
+			if(save->GetGameSave())
 			{
-				if(save->GetGameSave())
-				{
-					thumbnailRenderer = new ThumbnailRendererTask(save->GetGameSave(), thumbBoxSize.X, thumbBoxSize.Y);
-					thumbnailRenderer->Start();
-					triedThumbnail = true;
-				}
-				else if (save->GetID())
-				{
-					RequestSetup(save->GetID(), save->GetVersion(), thumbBoxSize.X, thumbBoxSize.Y);
-					RequestStart();
-					triedThumbnail = true;
-				}
+				waitingForThumb = true;
+				RequestBroker::Ref().RenderThumbnail(save->GetGameSave(), thumbBoxSize.X, thumbBoxSize.Y, this);
 			}
-			else if (file && file->GetGameSave())
+			else if(save->GetID())
 			{
-				thumbnailRenderer = new ThumbnailRendererTask(file->GetGameSave(), thumbBoxSize.X, thumbBoxSize.Y, true, true, false);
-				thumbnailRenderer->Start();
-				triedThumbnail = true;
+				waitingForThumb = true;
+				RequestBroker::Ref().RetrieveThumbnail(save->GetID(), save->GetVersion(), thumbBoxSize.X, thumbBoxSize.Y, this);
 			}
 		}
-
-		RequestPoll();
-
-		if (thumbnailRenderer)
+		else if(file && file->GetGameSave())
 		{
-			thumbnailRenderer->Poll();
-			if (thumbnailRenderer->GetDone())
-			{
-				thumbnail = thumbnailRenderer->Finish();
-				thumbnailRenderer = nullptr;
-			}
-		}
-
-		if (thumbnail && file)
-		{
-			thumbSize = ui::Point(thumbnail->Width, thumbnail->Height);
+			waitingForThumb = true;
+			RequestBroker::Ref().RenderThumbnail(file->GetGameSave(), true, false, thumbBoxSize.X, thumbBoxSize.Y, this);
 		}
 	}
 }
@@ -175,8 +165,8 @@ void SaveButton::Tick(float dt)
 void SaveButton::Draw(const Point& screenPos)
 {
 	Graphics * g = GetGraphics();
-	float scaleFactor = (Size.Y-25)/((float)YRES);
-	ui::Point thumbBoxSize = ui::Point(((float)XRES)*scaleFactor, ((float)YRES)*scaleFactor);
+	float scaleFactor;
+	ui::Point thumbBoxSize(0, 0);
 
 	wantsDraw = true;
 
@@ -185,13 +175,15 @@ void SaveButton::Draw(const Point& screenPos)
 		g->fillrect(screenPos.X, screenPos.Y, Size.X, Size.Y, 100, 170, 255, 100);
 	}
 
-	if (thumbnail)
+	scaleFactor = (Size.Y-25)/((float)YRES);
+	thumbBoxSize = ui::Point(((float)XRES)*scaleFactor, ((float)YRES)*scaleFactor);
+	if(thumbnail)
 	{
 		//thumbBoxSize = ui::Point(thumbnail->Width, thumbnail->Height);
-		if (save && save->id)
-			g->draw_image(thumbnail.get(), screenPos.X-3+(Size.X-thumbBoxSize.X)/2, screenPos.Y+(Size.Y-21-thumbBoxSize.Y)/2, 255);
+		if(save && save->id)
+			g->draw_image(thumbnail, screenPos.X-3+(Size.X-thumbBoxSize.X)/2, screenPos.Y+(Size.Y-21-thumbBoxSize.Y)/2, 255);
 		else
-			g->draw_image(thumbnail.get(), screenPos.X+(Size.X-thumbSize.X)/2, screenPos.Y+(Size.Y-21-thumbSize.Y)/2, 255);
+			g->draw_image(thumbnail, screenPos.X+(Size.X-thumbBoxSize.X)/2, screenPos.Y+(Size.Y-21-thumbBoxSize.Y)/2, 255);
 	}
 	else if (file && !file->GetGameSave())
 		g->drawtext(screenPos.X+(Size.X-Graphics::textwidth("Error loading save"))/2, screenPos.Y+(Size.Y-28)/2, "Error loading save", 180, 180, 180, 255);
@@ -264,8 +256,6 @@ void SaveButton::Draw(const Point& screenPos)
 			g->drawrect(screenPos.X+(Size.X-thumbBoxSize.X)/2, screenPos.Y+(Size.Y-21-thumbBoxSize.Y)/2, thumbBoxSize.X, thumbBoxSize.Y, 210, 230, 255, 255);
 		else
 			g->drawrect(screenPos.X+(Size.X-thumbBoxSize.X)/2, screenPos.Y+(Size.Y-21-thumbBoxSize.Y)/2, thumbBoxSize.X, thumbBoxSize.Y, 180, 180, 180, 255);
-		if (thumbSize.X)
-			g->xor_rect(screenPos.X+(Size.X-thumbSize.X)/2, screenPos.Y+(Size.Y-21-thumbSize.Y)/2, thumbSize.X, thumbSize.Y);
 
 		if (isMouseInside)
 		{
@@ -318,8 +308,7 @@ void SaveButton::AddContextMenu(int menuType)
 	{
 		menu = new ContextMenu(this);
 		menu->AddItem(ContextMenuItem("Open", 0, true));
-		if (Client::Ref().GetAuthUser().UserID)
-			menu->AddItem(ContextMenuItem("Select", 1, true));
+		menu->AddItem(ContextMenuItem("Select", 1, true));
 		menu->AddItem(ContextMenuItem("View History", 2, true));
 		menu->AddItem(ContextMenuItem("More by this user", 3, true));
 	}
@@ -398,20 +387,20 @@ void SaveButton::OnMouseLeave(int x, int y)
 
 void SaveButton::DoAltAction()
 {
-	if (actionCallback.altAction)
-		actionCallback.altAction();
+	if(actionCallback)
+		actionCallback->AltActionCallback(this);
 }
 
 void SaveButton::DoAltAction2()
 {
-	if (actionCallback.altAltAction)
-		actionCallback.altAltAction();
+	if(actionCallback)
+		actionCallback->AltActionCallback2(this);
 }
 
 void SaveButton::DoAction()
 {
-	if (actionCallback.action)
-		actionCallback.action();
+	if(actionCallback)
+		actionCallback->ActionCallback(this);
 }
 
 void SaveButton::DoSelection()
@@ -423,8 +412,13 @@ void SaveButton::DoSelection()
 		else
 			menu->SetItem(1, "Select");
 	}
-	if (selectable && actionCallback.selected)
-		actionCallback.selected();
+	if(selectable && actionCallback)
+		actionCallback->SelectedCallback(this);
+}
+
+void SaveButton::SetActionCallback(SaveButtonAction * action)
+{
+	actionCallback = action;
 }
 
 } /* namespace ui */

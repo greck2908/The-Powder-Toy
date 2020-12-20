@@ -1,6 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-void Element::Element_DUST()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_DUST PT_DUST 1
+Element_DUST::Element_DUST()
 {
 	Identifier = "DEFAULT_PT_DUST";
 	Name = "DUST";
@@ -27,6 +27,7 @@ void Element::Element_DUST()
 
 	Weight = 85;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 70;
 	Description = "Very light dust. Flammable.";
 
@@ -41,5 +42,8 @@ void Element::Element_DUST()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Graphics = NULL; // it this needed?
+	Update = NULL;
+	Graphics = NULL;
 }
+
+Element_DUST::~Element_DUST() {}

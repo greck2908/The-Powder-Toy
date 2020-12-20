@@ -1,6 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-void Element::Element_LOLZ()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_LOLZ PT_LOLZ 123
+Element_LOLZ::Element_LOLZ()
 {
 	Identifier = "DEFAULT_PT_LOLZ";
 	Name = "LOLZ";
@@ -26,7 +26,7 @@ void Element::Element_LOLZ()
 
 	Weight = 100;
 
-	DefaultProperties.temp = 373.0f;
+	Temperature = 373.0f;
 	HeatConduct = 40;
 	Description = "Lolz";
 
@@ -42,7 +42,8 @@ void Element::Element_LOLZ()
 	HighTemperatureTransition = NT;
 }
 
-int Element_LOLZ_RuleTable[9][9] =
+//#TPT-Directive ElementHeader Element_LOLZ static int RuleTable[9][9]
+int Element_LOLZ::RuleTable[9][9] =
 {
 	{0,0,0,0,0,0,0,0,0},
 	{1,0,0,0,0,0,1,0,0},
@@ -55,4 +56,7 @@ int Element_LOLZ_RuleTable[9][9] =
 	{0,1,0,0,0,0,0,1,0},
 };
 
-int Element_LOLZ_lolz[XRES/9][YRES/9];
+//#TPT-Directive ElementHeader Element_LOLZ static int lolz[XRES/9][YRES/9];
+int Element_LOLZ::lolz[XRES/9][YRES/9];
+
+Element_LOLZ::~Element_LOLZ() {}

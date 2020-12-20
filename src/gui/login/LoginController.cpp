@@ -1,12 +1,8 @@
 #include "LoginController.h"
-
+#include "client/User.h"
 #include "client/Client.h"
 
-#include "LoginView.h"
-#include "LoginModel.h"
-#include "Controller.h"
-
-LoginController::LoginController(std::function<void ()> onDone_):
+LoginController::LoginController(ControllerCallback * callback):
 	HasExited(false)
 {
 	loginView = new LoginView();
@@ -15,7 +11,8 @@ LoginController::LoginController(std::function<void ()> onDone_):
 	loginView->AttachController(this);
 	loginModel->AddObserver(loginView);
 
-	onDone = onDone_;
+	this->callback = callback;
+
 }
 
 void LoginController::Login(ByteString username, ByteString password)
@@ -32,8 +29,8 @@ void LoginController::Exit()
 {
 	loginView->CloseActiveWindow();
 	Client::Ref().SetAuthUser(loginModel->GetUser());
-	if (onDone)
-		onDone();
+	if(callback)
+		callback->ControllerExit();
 	HasExited = true;
 }
 

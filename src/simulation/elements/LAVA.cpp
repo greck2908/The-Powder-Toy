@@ -1,10 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-int Element_FIRE_update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-static void create(ELEMENT_CREATE_FUNC_ARGS);
-
-void Element::Element_LAVA()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_LAVA PT_LAVA 6
+Element_LAVA::Element_LAVA()
 {
 	Identifier = "DEFAULT_PT_LAVA";
 	Name = "LAVA";
@@ -31,7 +27,7 @@ void Element::Element_LAVA()
 
 	Weight = 45;
 
-	DefaultProperties.temp = R_TEMP + 1500.0f + 273.15f;
+	Temperature = R_TEMP+1500.0f+273.15f;
 	HeatConduct = 60;
 	Description = "Molten lava. Ignites flammable materials. Generated when metals and other materials melt, solidifies when cold.";
 
@@ -46,12 +42,14 @@ void Element::Element_LAVA()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	Update = &Element_FIRE_update;
-	Graphics = &graphics;
-	Create = &create;
+	Update = &Element_FIRE::update;
+	Graphics = &Element_LAVA::graphics;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+//#TPT-Directive ElementHeader Element_LAVA static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_LAVA::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	*colr = cpart->life * 2 + 0xE0;
 	*colg = cpart->life * 1 + 0x50;
@@ -69,7 +67,5 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	return 0;
 }
 
-static void create(ELEMENT_CREATE_FUNC_ARGS)
-{
-	sim->parts[i].life = RNG::Ref().between(240, 359);
-}
+
+Element_LAVA::~Element_LAVA() {}

@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-int Element_COAL_update(UPDATE_FUNC_ARGS);
-int Element_COAL_graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_COAL()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_COAL PT_COAL 59
+Element_COAL::Element_COAL()
 {
 	Identifier = "DEFAULT_PT_COAL";
 	Name = "COAL";
@@ -30,6 +27,7 @@ void Element::Element_COAL()
 
 	Weight = 100;
 
+	Temperature = R_TEMP+0.0f	+273.15f;
 	HeatConduct = 200;
 	Description = "Coal, Burns very slowly. Gets red when hot.";
 
@@ -44,14 +42,12 @@ void Element::Element_COAL()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	DefaultProperties.life = 110;
-	DefaultProperties.tmp = 50;
-
-	Update = &Element_COAL_update;
-	Graphics = &Element_COAL_graphics;
+	Update = &Element_COAL::update;
+	Graphics = &Element_COAL::graphics;
 }
 
-int Element_COAL_update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_COAL static int update(UPDATE_FUNC_ARGS)
+int Element_COAL::update(UPDATE_FUNC_ARGS)
 {
 	if (parts[i].life<=0) {
 		sim->create_part(i, x, y, PT_FIRE);
@@ -67,7 +63,7 @@ int Element_COAL_update(UPDATE_FUNC_ARGS)
 		else if (parts[i].tmp<40&&parts[i].tmp>0)
 			parts[i].tmp--;
 		else if (parts[i].tmp<=0) {
-			sim->part_change_type(i, x, y, PT_BCOL);
+			sim->create_part(i, x, y, PT_BCOL);
 			return 1;
 		}
 	}
@@ -76,9 +72,10 @@ int Element_COAL_update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-constexpr float FREQUENCY = 3.1415/(2*300.0f-(300.0f-200.0f));
+#define FREQUENCY 3.1415/(2*300.0f-(300.0f-200.0f))
 
-int Element_COAL_graphics(GRAPHICS_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_COAL static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_COAL::graphics(GRAPHICS_FUNC_ARGS)
  //Both COAL and Broken Coal
 {
 	*colr += (cpart->tmp2-295.15f)/3;
@@ -102,3 +99,7 @@ int Element_COAL_graphics(GRAPHICS_FUNC_ARGS)
 	}
 	return 0;
 }
+
+
+
+Element_COAL::~Element_COAL() {}

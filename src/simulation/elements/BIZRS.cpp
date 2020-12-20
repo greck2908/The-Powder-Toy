@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-int Element_BIZR_update(UPDATE_FUNC_ARGS);
-int Element_BIZR_graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_BIZRS()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_BIZRS PT_BIZRS 105
+Element_BIZRS::Element_BIZRS()
 {
 	Identifier = "DEFAULT_PT_BIZRS";
 	Name = "BIZS";
@@ -29,7 +26,7 @@ void Element::Element_BIZRS()
 
 	Weight = 100;
 
-	DefaultProperties.temp = R_TEMP + 300.0f + 273.15f;
+	Temperature = R_TEMP+300.0f+273.15f;
 	HeatConduct = 251;
 	Description = "Bizarre solid.";
 
@@ -44,8 +41,8 @@ void Element::Element_BIZRS()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	DefaultProperties.ctype = 0x47FFFF;
-
-	Update = &Element_BIZR_update;
-	Graphics = &Element_BIZR_graphics;
+	Update = &Element_BIZR::update;
+	Graphics = &Element_BIZR::graphics;
 }
+//BIZRS update is in BIZR.cpp
+Element_BIZRS::~Element_BIZRS() {}

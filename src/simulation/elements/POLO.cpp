@@ -1,9 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_POLO()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_POLO PT_POLO 182
+Element_POLO::Element_POLO()
 {
 	Identifier = "DEFAULT_PT_POLO";
 	Name = "POLO";
@@ -30,7 +27,7 @@ void Element::Element_POLO()
 
 	Weight = 90;
 
-	DefaultProperties.temp = 388.15f;
+	Temperature = 388.15f;
 	HeatConduct = 251;
 	Description = "Polonium, highly radioactive. Decays into NEUT and heats up.";
 
@@ -45,14 +42,15 @@ void Element::Element_POLO()
 	HighTemperature = 526.95f;
 	HighTemperatureTransition = PT_LAVA;
 
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_POLO::update;
+	Graphics = &Element_POLO::graphics;
 }
 
-constexpr int COOLDOWN = 15;
-constexpr int LIMIT = 5;
+#define COOLDOWN 15
+#define LIMIT 5
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_POLO static int update(UPDATE_FUNC_ARGS)
+int Element_POLO::update(UPDATE_FUNC_ARGS)
 {
 	int r = sim->photons[y][x];
 	if (parts[i].tmp < LIMIT && !parts[i].life)
@@ -93,7 +91,7 @@ static int update(UPDATE_FUNC_ARGS)
 		parts[i].temp = (parts[i].temp+600.0f)/2.0f;
 		return 1;
 	}
-	if (TYP(r) == PT_PROT)
+	if (parts[ID(r)].type == PT_PROT)
 	{
 		parts[i].tmp2++;
 		sim->kill_part(ID(r));
@@ -105,7 +103,8 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_POLO static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_POLO::graphics(GRAPHICS_FUNC_ARGS)
 {
 	if (cpart->tmp >= LIMIT)
 	{
@@ -118,3 +117,5 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 
 	return 0;
 }
+
+Element_POLO::~Element_POLO() {}

@@ -26,11 +26,7 @@
 ** [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 */
 
-#pragma once
-#include "Config.h"
-
 #define LUA_BITOP_VERSION	"1.0.2"
 
-struct lua_State;
-extern "C" int luaopen_bit(lua_State *L);
+int luaopen_bit(lua_State *L);
 

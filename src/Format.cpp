@@ -1,13 +1,12 @@
-#include "Format.h"
 
 #include <ctime>
+#include "common/String.h"
 #include <stdexcept>
 #include <iostream>
 #include <iterator>
-#include <cstring>
 #include <zlib.h>
 #include <cstdio>
-
+#include "Format.h"
 #include "graphics/Graphics.h"
 
 ByteString format::URLEncode(ByteString source)
@@ -53,12 +52,12 @@ ByteString format::UnixtimeToDate(time_t unixtime, ByteString dateFormat)
 ByteString format::UnixtimeToDateMini(time_t unixtime)
 {
 	time_t currentTime = time(NULL);
-	struct tm currentTimeData = *gmtime(&currentTime);
-	struct tm timeData = *gmtime(&unixtime);
+	struct tm currentTimeData = *localtime(&currentTime);
+	struct tm timeData = *localtime(&unixtime);
 
 	if(currentTimeData.tm_year != timeData.tm_year)
 	{
-		return UnixtimeToDate(unixtime, "%d %b %Y");
+		return UnixtimeToDate(unixtime, "%b %Y");
 	}
 	else if(currentTimeData.tm_mon != timeData.tm_mon || currentTimeData.tm_mday != timeData.tm_mday)
 	{

@@ -1,10 +1,6 @@
-#include "simulation/ElementCommon.h"
-#include "common/tpt-minmax.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-
-void Element::Element_DEUT()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_DEUT PT_DEUT 95
+Element_DEUT::Element_DEUT()
 {
 	Identifier = "DEFAULT_PT_DEUT";
 	Name = "DEUT";
@@ -30,7 +26,7 @@ void Element::Element_DEUT()
 
 	Weight = 31;
 
-	DefaultProperties.temp = R_TEMP - 2.0f + 273.15f;
+	Temperature = R_TEMP-2.0f	+273.15f;
 	HeatConduct = 251;
 	Description = "Deuterium oxide. Volume changes with temp, radioactive with neutrons.";
 
@@ -45,20 +41,17 @@ void Element::Element_DEUT()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	DefaultProperties.life = 10;
-
-	Update = &update;
-	Graphics = &graphics;
+	Update = &Element_DEUT::update;
+	Graphics = &Element_DEUT::graphics;
 }
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_DEUT static int update(UPDATE_FUNC_ARGS)
+int Element_DEUT::update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry, trade, np;
 	float gravtot = fabs(sim->gravy[(y/CELL)*(XRES/CELL)+(x/CELL)])+fabs(sim->gravx[(y/CELL)*(XRES/CELL)+(x/CELL)]);
-	// Prevent division by 0
-	float temp = std::max(1.0f, (parts[i].temp + 1));
-	int maxlife = ((10000/(temp + 1))-1);
-	if (RNG::Ref().chance(10000 % static_cast<int>(temp + 1), static_cast<int>(temp + 1)))
+	int maxlife = ((10000/(parts[i].temp + 1))-1);
+	if (RNG::Ref().chance(10000 % static_cast<int>(parts[i].temp + 1), static_cast<int>(parts[i].temp + 1)))
 		maxlife++;
 	// Compress when Newtonian gravity is applied
 	// multiplier=1 when gravtot=0, multiplier -> 5 as gravtot -> inf
@@ -131,7 +124,11 @@ trade:
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+
+
+//#TPT-Directive ElementHeader Element_DEUT static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_DEUT::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	if(cpart->life>=240)
 	{
@@ -154,3 +151,6 @@ static int graphics(GRAPHICS_FUNC_ARGS)
 	}
 	return 0;
 }
+
+
+Element_DEUT::~Element_DEUT() {}

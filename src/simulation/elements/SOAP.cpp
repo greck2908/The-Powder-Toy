@@ -1,10 +1,6 @@
-#include "simulation/ElementCommon.h"
-
-static int update(UPDATE_FUNC_ARGS);
-static int graphics(GRAPHICS_FUNC_ARGS);
-static void changeType(ELEMENT_CHANGETYPE_FUNC_ARGS);
-
-void Element::Element_SOAP()
+#include "simulation/Elements.h"
+//#TPT-Directive ElementClass Element_SOAP PT_SOAP 149
+Element_SOAP::Element_SOAP()
 {
 	Identifier = "DEFAULT_PT_SOAP";
 	Name = "SOAP";
@@ -30,7 +26,7 @@ void Element::Element_SOAP()
 
 	Weight = 35;
 
-	DefaultProperties.temp = R_TEMP - 2.0f + 273.15f;
+	Temperature = R_TEMP-2.0f	+273.15f;
 	HeatConduct = 29;
 	Description = "Soap. Creates bubbles, washes off deco color, and cures virus.";
 
@@ -45,15 +41,12 @@ void Element::Element_SOAP()
 	HighTemperature = ITH;
 	HighTemperatureTransition = NT;
 
-	DefaultProperties.tmp = -1;
-	DefaultProperties.tmp2 = -1;
-
-	Update = &update;
-	Graphics = &graphics;
-	ChangeType = &changeType;
+	Update = &Element_SOAP::update;
+	Graphics = &Element_SOAP::graphics;
 }
 
-void Element_SOAP_detach(Simulation * sim, int i)
+//#TPT-Directive ElementHeader Element_SOAP static void detach(Simulation * sim, int i)
+void Element_SOAP::detach(Simulation * sim, int i)
 {
 	if ((sim->parts[i].ctype&2) == 2 && sim->parts[i].tmp >= 0 && sim->parts[i].tmp < NPART && sim->parts[sim->parts[i].tmp].type == PT_SOAP)
 	{
@@ -70,7 +63,8 @@ void Element_SOAP_detach(Simulation * sim, int i)
 	sim->parts[i].ctype = 0;
 }
 
-static void attach(Particle * parts, int i1, int i2)
+//#TPT-Directive ElementHeader Element_SOAP static void attach(Particle * parts, int i1, int i2)
+void Element_SOAP::attach(Particle * parts, int i1, int i2)
 {
 	if (!(parts[i2].ctype&4))
 	{
@@ -90,10 +84,12 @@ static void attach(Particle * parts, int i1, int i2)
 	}
 }
 
-constexpr float FREEZING = 248.15f;
-constexpr float BLEND = 0.85f;
+#define FREEZING 248.15f
+#define BLEND 0.85f
 
-static int update(UPDATE_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_SOAP static int update(UPDATE_FUNC_ARGS)
+int Element_SOAP::update(UPDATE_FUNC_ARGS)
+
 {
 	int r, rx, ry, nr, ng, nb, na;
 	float tr, tg, tb, ta;
@@ -124,19 +120,19 @@ static int update(UPDATE_FUNC_ARGS)
 						if (parts[target].ctype&2)
 						{
 							target = parts[target].tmp;
-							Element_SOAP_detach(sim, target);
+							detach(sim, target);
 						}
 						if (parts[target].ctype&4)
 						{
 							target = parts[target].tmp2;
-							Element_SOAP_detach(sim, target);
+							detach(sim, target);
 						}
 					}
 				}
 				if ((parts[i].ctype&6) != 6)
 					parts[i].ctype = 0;
 				if ((parts[i].ctype&6) == 6 && (parts[parts[i].tmp].ctype&6) == 6 && parts[parts[i].tmp].tmp == i)
-					Element_SOAP_detach(sim, i);
+					detach(sim, i);
 			}
 			parts[i].vy = (parts[i].vy-0.1f)*0.5f;
 			parts[i].vx *= 0.5f;
@@ -151,7 +147,7 @@ static int update(UPDATE_FUNC_ARGS)
 						if (!r)
 							continue;
 						if ((parts[ID(r)].type == PT_SOAP) && (parts[ID(r)].ctype&1) && !(parts[ID(r)].ctype&4))
-							attach(parts, i, ID(r));
+							Element_SOAP::attach(parts, i, ID(r));
 					}
 		}
 		else
@@ -170,7 +166,7 @@ static int update(UPDATE_FUNC_ARGS)
 									|| (r && !(sim->elements[TYP(r)].Properties&TYPE_GAS)
 								    && TYP(r) != PT_SOAP && TYP(r) != PT_GLAS))
 								{
-									Element_SOAP_detach(sim, i);
+									detach(sim, i);
 									continue;
 								}
 							}
@@ -275,16 +271,12 @@ static int update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-static int graphics(GRAPHICS_FUNC_ARGS)
+//#TPT-Directive ElementHeader Element_SOAP static int graphics(GRAPHICS_FUNC_ARGS)
+int Element_SOAP::graphics(GRAPHICS_FUNC_ARGS)
+
 {
 	*pixel_mode |= EFFECT_LINES|PMODE_BLUR;
 	return 1;
 }
 
-static void changeType(ELEMENT_CHANGETYPE_FUNC_ARGS)
-{
-	if (from == PT_SOAP && to != PT_SOAP)
-	{
-		Element_SOAP_detach(sim, i);
-	}
-}
+Element_SOAP::~Element_SOAP() {}

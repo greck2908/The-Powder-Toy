@@ -1,13 +1,7 @@
+#include <stack>
 #include "ConsoleController.h"
 
-#include "Controller.h"
-#include "ConsoleView.h"
-#include "ConsoleModel.h"
-#include "ConsoleCommand.h"
-
-#include "lua/CommandInterface.h"
-
-ConsoleController::ConsoleController(std::function<void ()> onDone_, CommandInterface * commandInterface):
+ConsoleController::ConsoleController(ControllerCallback * callback, CommandInterface * commandInterface):
 	HasDone(false)
 {
 	consoleModel = new ConsoleModel();
@@ -15,7 +9,7 @@ ConsoleController::ConsoleController(std::function<void ()> onDone_, CommandInte
 	consoleView->AttachController(this);
 	consoleModel->AddObserver(consoleView);
 
-	onDone = onDone_;
+	this->callback = callback;
 	this->commandInterface = commandInterface;
 }
 
@@ -59,8 +53,8 @@ void ConsoleController::PreviousCommand()
 void ConsoleController::Exit()
 {
 	consoleView->CloseActiveWindow();
-	if (onDone)
-		onDone();
+	if (callback)
+		callback->ControllerExit();
 	HasDone = true;
 }
 
@@ -72,6 +66,7 @@ ConsoleView * ConsoleController::GetView()
 ConsoleController::~ConsoleController()
 {
 	consoleView->CloseActiveWindow();
+	delete callback;
 	delete consoleModel;
 	delete consoleView;
 }
